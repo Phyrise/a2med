@@ -167,8 +167,11 @@ async function search(q){
   if(err){$('rsum').textContent='Recherche interrompue : '+err.message;return {error:err.message};}
   results=r.pages;lexicalHits=r.lexicalHits;
   if(!results.length){$('rsum').textContent='Aucune page trouvée.';$('after').hidden=false;return null;}
-  renderResults();$('rsum').textContent=results.length+' pages · '+(engine.MODE==='sparka'?'calcul sur Sparka':'hors ligne');
+  const where=engine.MODE==='sparka'?'calcul sur Sparka':'hors ligne',secs=ms=>(ms/1000).toFixed(1).replace('.',',')+' s';
+  renderResults();$('rsum').textContent=results.length+' pages · '+where;
   const mine=results,begin=performance.now(),shown=await previewBest();r.times.first_page_ms=r.times.retrieval_ms+performance.now()-begin;
+  // Time from the question to the first page on screen (as in the Android app); the search alone if the page was not shown.
+  if(results===mine)$('rsum').textContent=results.length+' pages · '+secs(shown?r.times.first_page_ms:r.times.retrieval_ms)+' · '+where;
   if(results===mine)for(const p of results.slice(1,3))pageURL(p.row.doc,p.row.page,'std',()=>results===mine).catch(()=>{});
   return {question:q,times:r.times,first_page_rendered:shown,top5:mine.map(p=>p.row.pid)};  // returned to the dev console only, not stored
 }

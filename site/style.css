@@ -72,6 +72,8 @@ main{padding:4px 12px calc(68px + env(safe-area-inset-bottom))}
 .pill[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 .domains .pill{font-size:.86rem;padding:8px 11px;min-height:40px}
 .note{background:var(--info-soft);color:var(--info);border-radius:12px;padding:10px 12px;font-size:.92rem}
+.keep{margin:0 0 14px}.keep p{margin:0 0 6px}.keep div{display:flex;align-items:center;gap:14px}
+.keep .act{font:inherit;font-weight:650;border:0;border-radius:10px;padding:10px 14px;min-height:44px;background:var(--info);color:#fff}.keep .link{color:inherit;background:none;border:0;font:inherit}
 .notice{color:var(--muted);font-size:.8rem;margin-top:28px}
 
 /* Rows: compact list items (other results, saved pages, documents) */

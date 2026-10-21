@@ -40,7 +40,7 @@ async function showData(local,remote,p,{closable,recheck,checked,checking}){
 ${ios&&!standalone?'<p class="note">Sur iPhone : ajoutez d’abord l’app à l’écran d’accueil (Partager → « Sur l’écran d’accueil ») et ouvrez-la depuis l’icône. Sinon Safari peut effacer les données après quelques semaines sans usage.</p>':''}
 <ul>${rows}</ul>
 <p class="small">${local&&remote&&remote.pack!==local.pack?`Installé : ${version(local)} · disponible : ${version(remote)}`
-  :remote||local?`Données : ${version(remote||local)}`:''}${total}${store.quota?` · espace autorisé pour l’app : ${data.mb(store.quota)}`:''}${store.persisted?' · stockage protégé':''}</p>
+  :remote||local?`Données : ${version(remote||local)}`:''}${total}${store.quota?` · espace autorisé pour l’app : ${data.mb(store.quota)}`:''}${store.persisted===true?' · stockage protégé':store.persisted===false?' · stockage non protégé (le téléphone peut l’effacer s’il manque de place)':''}</p>
 <div class="bar" hidden><i></i></div><p class="status small"></p>
 <div>${remote&&p.bytes?`<button class="act">${first?'Télécharger':'Mettre à jour'}</button>`:''}${recheck&&!first?`<button class="ghost recheck"${checking?' disabled>Vérification…':'>Vérifier maintenant'}</button>`:''}${closable?'<button class="ghost close">Fermer</button>':''}</div>`;
   box.querySelector('.close')?.addEventListener('click',()=>panel().remove());
@@ -73,6 +73,7 @@ async function start(){
     const p=await data.plan(local,remote);
     await showData(local,remote,p,{closable:p.complete});if(!p.complete)return;
   }
+  keep();  // data installed: is it protected? (app.js only resolves once the model is loaded)
   if(served)await served;
   await import('./web-bridge.js');await import('./app.js');
   let state={remote:null,p:own},banner=null,checked=0;
@@ -88,5 +89,24 @@ async function start(){
   check().then(offer);
   // The manifest is a few kB: look again whenever the app comes back to the screen (at most once a minute).
   document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&Date.now()-checked>60000){await check();offer();}});
+}
+// The downloaded data stay only as long as the browser keeps them. Ask for protected storage; if it is refused, the home screen
+// suggests installing the app (Chrome protects installed apps; on iPhone only a home-screen app keeps its data for good).
+// « Plus tard » hides the card for a week.
+let installEvent=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvent=e;keep();});
+addEventListener('appinstalled',()=>{installEvent=null;keep();});
+async function keep(){
+  const box=document.getElementById('keep');if(!box)return;
+  let safe=false;try{safe=await navigator.storage.persisted()||await navigator.storage.persist();}catch{}
+  let later=0;try{later=+(localStorage.getItem('a2med.keep-later')||0);}catch{}
+  if(safe||Date.now()-later<7*864e5){box.hidden=true;return;}
+  box.querySelector('p').textContent=standalone?'Stockage non protégé : le téléphone peut effacer les données de l’app (420 Mo à retélécharger) s’il manque de place.'
+    :ios?'Pour garder les données sur cet iPhone : Partager → « Sur l’écran d’accueil », puis ouvrez l’app depuis l’icône (ses données sont alors conservées).'
+    :'Installez l’app pour protéger ses données (420 Mo) et l’ouvrir depuis l’écran d’accueil, même sans réseau'+(installEvent?'.':' : menu ⋮ du navigateur → « Installer l’application ».');
+  const act=box.querySelector('.act');act.hidden=!installEvent;
+  act.onclick=async()=>{const e=installEvent;if(!e)return;e.prompt();const {outcome}=await e.userChoice;if(outcome==='accepted'){installEvent=null;box.hidden=true;}};
+  box.querySelector('.later').onclick=()=>{try{localStorage.setItem('a2med.keep-later',String(Date.now()));}catch{}box.hidden=true;};
+  box.hidden=false;
 }
 start().catch(e=>{document.body.textContent='Démarrage impossible : '+e.message;});
