@@ -6,7 +6,7 @@ const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||navigator.platform==='Ma
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const LABELS={model:'Modèle de recherche',pdf:'Documents PDF',index:'Index et textes'};
 const day=iso=>iso?new Date(iso+'T00:00:00Z').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}):'?';
-const version=m=>`version du ${day(m.date)} (${m.pack})`;
+const version=m=>`du ${day(m.date)} (${m.pack})`;
 
 function panel(){
   let box=document.getElementById('data-panel');if(box)return box;
@@ -25,22 +25,22 @@ function panel(){
 }
 
 async function showData(local,remote,p,{closable,recheck,checked,checking}){
-  const box=panel().querySelector('.in'),store=await data.storage();
+  const box=panel().querySelector('.in');
   const blocks=remote?remote.blocks:local.blocks;
   const first=!p.complete,files=n=>`${n} fichier${n>1?'s':''}`;
   // Under each block: what it takes on the phone (installed set), or what the first download will take.
   const held=id=>first?null:local.blocks.find(b=>b.id===id);
   const rows=blocks.map(b=>{const c=p.blocks[b.id],h=held(b.id);
-    return `<li><span>${LABELS[b.id]||b.label}<small>${h?`${data.mb(h.bytes)} sur l’appareil · ${files(h.files.length)}`:`${data.mb(b.bytes)} · ${files(b.files.length)}`}</small></span>`
+    return `<li><span>${LABELS[b.id]||b.label}<small>${data.mb((h||b).bytes)}</small></span>`
       +`<span>${c?(first?'':`${files(c.files)} · ${data.mb(c.bytes)}`):'à jour'}</span></li>`;}).join('');
-  const total=first?'':` · ${data.mb(local.blocks.reduce((s,b)=>s+b.bytes,0))} sur l’appareil au total`;
+  const total=first?'':` · ${data.mb(local.blocks.reduce((s,b)=>s+b.bytes,0))}`;
   box.innerHTML=`<h1>${first?'Installer les données':'Données et mises à jour'}</h1>
-<p>${first?`Pour fonctionner hors ligne, l’app télécharge une fois le modèle de recherche, l’index et les PDF (${data.mb(p.bytes)}). Wi-Fi conseillé.`
-  :remote?(p.bytes?`Mise à jour disponible : ${data.mb(p.bytes)} à télécharger, le reste est déjà sur l’appareil.`:'Tout est à jour.'):checking?'Vérification des mises à jour…':'Pas de réseau (ou réseau trop lent) : impossible de vérifier les mises à jour.'}${checked?` <span class="small">(${remote?'vérifié':'essai'} à ${new Date(checked).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})})</span>`:''}</p>
-${ios&&!standalone?'<p class="note">Sur iPhone : ajoutez d’abord l’app à l’écran d’accueil (Partager → « Sur l’écran d’accueil ») et ouvrez-la depuis l’icône. Sinon Safari peut effacer les données après quelques semaines sans usage.</p>':''}
+<p>${first?`L’app télécharge une fois ses données (${data.mb(p.bytes)}) pour fonctionner hors ligne. Wi-Fi conseillé.`
+  :remote?(p.bytes?`Mise à jour disponible : ${data.mb(p.bytes)} à télécharger.`:'Tout est à jour.'):checking?'Vérification des mises à jour…':'Pas de réseau : mises à jour non vérifiées.'}${checked?` <span class="small">(${remote?'vérifié':'essai'} à ${new Date(checked).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})})</span>`:''}</p>
+${ios&&!standalone?'<p class="note">Sur iPhone : ajoutez d’abord l’app à l’écran d’accueil (Partager → « Sur l’écran d’accueil »), puis téléchargez depuis l’icône.</p>':''}
 <ul>${rows}</ul>
-<p class="small">${local&&remote&&remote.pack!==local.pack?`Installé : ${version(local)} · disponible : ${version(remote)}`
-  :remote||local?`Données : ${version(remote||local)}`:''}${total}${store.quota?` · espace autorisé pour l’app : ${data.mb(store.quota)}`:''}${store.persisted===true?' · stockage protégé':store.persisted===false?' · stockage non protégé (le téléphone peut l’effacer s’il manque de place)':''}</p>
+<p class="small">${local&&remote&&remote.pack!==local.pack?`Données installées ${version(local)} · disponibles ${version(remote)}`
+  :remote||local?`Données ${version(remote||local)}`:''}${total}</p>
 <div class="bar" hidden><i></i></div><p class="status small"></p>
 <div>${remote&&p.bytes?`<button class="act">${first?'Télécharger':'Mettre à jour'}</button>`:''}${recheck&&!first?`<button class="ghost recheck"${checking?' disabled>Vérification…':'>Vérifier maintenant'}</button>`:''}${closable?'<button class="ghost close">Fermer</button>':''}</div>`;
   box.querySelector('.close')?.addEventListener('click',()=>panel().remove());
@@ -78,7 +78,7 @@ async function start(){
   // New app version: the browser looks for a new sw.js only when the page loads, and an installed app coming back to the screen
   // is resumed, not reloaded. So look for it on return too; once the new version has taken over, offer to switch (a tap).
   const switchTo=()=>{if(document.getElementById('new-version'))return;const t=document.createElement('button');t.id='new-version';t.className='toast';
-    t.style.cssText='border:0;font:inherit;z-index:61';t.textContent='Nouvelle version de l’app : toucher pour l’utiliser';t.onclick=()=>location.reload();document.body.append(t);};
+    t.style.cssText='border:0;font:inherit;z-index:61';t.textContent='Nouvelle version de l’app · toucher pour l’utiliser';t.onclick=()=>location.reload();document.body.append(t);};
   navigator.serviceWorker.addEventListener('controllerchange',switchTo);  // from here on: a new version (the first one is awaited above)
   await import('./web-bridge.js');await import('./app.js');
   let state={remote:null,p:own},banner=null,checked=0;
@@ -106,9 +106,9 @@ async function keep(){
   let safe=false;try{safe=await navigator.storage.persisted()||await navigator.storage.persist();}catch{}
   let later=0;try{later=+(localStorage.getItem('a2med.keep-later')||0);}catch{}
   if(safe||Date.now()-later<7*864e5){box.hidden=true;return;}
-  box.querySelector('p').textContent=standalone?'Stockage non protégé : le téléphone peut effacer les données de l’app (420 Mo à retélécharger) s’il manque de place.'
-    :ios?'Pour garder les données sur cet iPhone : Partager → « Sur l’écran d’accueil », puis ouvrez l’app depuis l’icône (ses données sont alors conservées).'
-    :'Installez l’app pour protéger ses données (420 Mo) et l’ouvrir depuis l’écran d’accueil, même sans réseau'+(installEvent?'.':' : menu ⋮ du navigateur → « Installer l’application ».');
+  box.querySelector('p').textContent=standalone?'Le téléphone peut effacer les données de l’app s’il manque de place.'
+    :ios?'Pour garder les données : Partager → « Sur l’écran d’accueil », puis ouvrez l’app depuis l’icône.'
+    :'Installez l’app pour garder ses données'+(installEvent?'.':' : menu ⋮ → « Installer l’application ».');
   const act=box.querySelector('.act');act.hidden=!installEvent;
   act.onclick=async()=>{const e=installEvent;if(!e)return;e.prompt();const {outcome}=await e.userChoice;if(outcome==='accepted'){installEvent=null;box.hidden=true;}};
   box.querySelector('.later').onclick=()=>{try{localStorage.setItem('a2med.keep-later',String(Date.now()));}catch{}box.hidden=true;};

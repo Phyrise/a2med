@@ -4,8 +4,9 @@
 if(!window.Local)await import('./dev-bridge.js');
 import * as engine from './engine.js';
 import {BASE,DEV} from './config.js';
+import {localManifest} from './data.js';
 
-const VERSION='0.5 web (prototype)';
+const VERSION='0.5';
 const DATA=BASE+'pack/ui/';
 
 // ---------- small helpers ----------
@@ -33,7 +34,10 @@ const pageLabel=(doc,page)=>(isSlides(doc)?'Diapo ':'p. ')+(page+1);
 // The year leads every document line, in bold: which recommendation is the recent one must be seen at a glance.
 const withYear=(d,rest)=>{const t=rest.filter(Boolean).join(' · ');return d.year?[el('b',{class:'yr'},String(d.year)),t?' · '+t:'']:[t];};
 const metaLine=(doc,page,total=true,kind=false)=>{const d=docOf(doc);return withYear(d,[kind&&d.kind,d.source,pageLabel(doc,page)+(total?' / '+d.pages:'')]);};
-const statusOf=doc=>docOf(doc).status;
+// Status of a document, shortened for the doctor (the pack's longer labels and details are for following the sources).
+const SHORT=[[/^Version mise à jour.*/,'Version mise à jour'],[/^Recommandation signalée en cours de révision$/,'En cours de révision'],[/^Classé obsolète.*/,'Obsolète selon la SPILF']];
+const short=s=>s&&{level:s.level,label:SHORT.reduce((l,[r,t])=>l.replace(r,t),s.label)};
+const statusOf=doc=>short(docOf(doc).status);
 
 // ---------- snippets (from 0.3) ----------
 function queryTerms(q){return [...new Set((norm(q).match(/[\p{L}\p{N}]+/gu)||[]).filter(t=>!STOP.has(t)&&(t.length>=3||/\d/.test(t))))];}
@@ -140,14 +144,14 @@ function spellingHints(q){
 function renderSpelling(){
   const box=$('spell'),hints=spellingHints(query);box.replaceChildren();
   for(const [word,fix] of hints)box.append(el('span',{},'« '+word+' » n’apparaît dans aucun document. Vouliez-vous dire ',el('button',{type:'button',class:'link',onclick:()=>{setQ(query.replace(word,fix));submit();}},fix),' ? '));
-  if(!hints.length&&lexicalHits===0)box.append('Aucun mot de la question n’apparaît tel quel dans les documents : pages proposées par proximité de sens seulement.');
+  if(!hints.length&&lexicalHits===0)box.append('Aucun mot de la question dans les documents : pages proches par le sens.');
   box.hidden=!box.childNodes.length;
 }
 
 // ---------- search ----------
 function engineStatus(text,cls=''){const e=$('engine');e.hidden=!text;e.className='engine '+cls;e.textContent=text||'';}
 function submit(){const q=$('q').value.trim();if(!q)return;$('q').blur();$('assist').hidden=true;
-  if(!engine.state.ready){pendingQuery=q;$('queued').hidden=false;$('queued').textContent='« '+q+' » : la recherche part dès que l’appareil est prêt (quelques secondes, au premier lancement).';navigate({view:'home'});return;}
+  if(!engine.state.ready){pendingQuery=q;$('queued').hidden=false;$('queued').textContent='« '+q+' » : recherche lancée dès que l’app est prête.';navigate({view:'home'});return;}
   search(q);}
 // A question asked while the engine is still busy with the previous one replaces it: it starts as soon as the engine is free
 // (the older answer is never shown under the new question). The page preview no longer holds the engine.
@@ -234,7 +238,7 @@ function openPage(doc,page,hit=null){navigate({view:'page',doc,page,hit},'push')
 function renderReader(){
   if(!cur)return;const d=docOf(cur.doc),st=statusOf(cur.doc);
   $('r-title').textContent=d.title;$('r-meta').replaceChildren(...withYear(d,[d.source,d.kind]));
-  const s=$('r-status');s.hidden=!st;if(st){s.className='status '+st.level;s.replaceChildren(el('strong',{},(st.level==='warn'?'⚠ ':'')+st.label),st.detail?el('span',{},st.detail):null);}
+  const s=$('r-status');s.hidden=!st;if(st){s.className='status '+st.level;s.replaceChildren(el('strong',{},(st.level==='warn'?'⚠ ':'')+st.label));}
   const sv=isSaved(cur.doc,cur.page);$('r-save').setAttribute('aria-pressed',String(sv));$('r-save').setAttribute('aria-label',sv?'Retirer de Mes pages':'Enregistrer dans Mes pages');
   $('pageinfo').textContent=pageLabel(cur.doc,cur.page)+' / '+d.pages;
   $('prev-page').disabled=cur.page<=0;$('next-page').disabled=cur.page>=d.pages-1;
@@ -462,13 +466,15 @@ function reference(){const d=docOf(cur.doc);return [d.title,[d.source,d.year].fi
 function showText(){
   const qt=queryTerms(query),t=textOfPage(cur.doc,cur.page),body=$('text-body');
   $('text-title').textContent='Texte — '+pageLabel(cur.doc,cur.page);
-  body.replaceChildren(...(t?t.split(/\n+/).filter(s=>s.trim()).map(s=>el('p',{},highlighted(s,qt))):[el('p',{class:'muted'},texts?'Pas de texte extrait pour cette page (image ou page exclue de la recherche).':'Texte en cours de chargement…')]));
+  body.replaceChildren(...(t?t.split(/\n+/).filter(s=>s.trim()).map(s=>el('p',{},highlighted(s,qt))):[el('p',{class:'muted'},texts?'Pas de texte pour cette page.':'Texte en cours de chargement…')]));
   $('textsheet').showModal();$('text-body').scrollTop=0;
 }
 
 // ---------- Question tab home ----------
 const fmtDate=iso=>new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
-function renderFreshness(){const t=info?'Sources SPILF vérifiées le '+fmtDate(info.spilf_checked_at)+' · documents du '+fmtDate(info.pack_date):'';for(const n of document.querySelectorAll('.fresh-line'))n.textContent=t;}
+// One date in the app: the data version (the manifest the phone installed), the same as in « Données et mises à jour ».
+let dataDate=null;
+function renderFreshness(){const t=dataDate?'Données du '+fmtDate(dataDate):'';for(const n of document.querySelectorAll('.fresh-line'))n.textContent=t;}
 function renderHome(){
   const r=store.get(RECENT,[]);$('recent-block').hidden=!r.length;$('first-block').hidden=r.length>0;
   $('recent').replaceChildren(...r.slice(0,4).map(x=>el('button',{type:'button',class:'pill',onclick:()=>{setQ(x.q);submit();}},x.q)));
@@ -481,7 +487,7 @@ const savedRow=p=>{const d=docOf(p.doc);return el('button',{type:'button',class:
 const newTag=id=>info?.added?.includes(id)?'Nouveau':info?.updated?.includes(id)?'Mis à jour':null;
 function docRow(d,{tag=null,showDomain=false,note=null}={}){
   const meta=withYear(d,[d.source,d.kind,d.pages+(d.kind==='Diaporama'?' diapos':' p.')]);
-  const badges=tag?[el('span',{class:'badge new'},tag)]:[d.status?el('span',{class:'badge '+d.status.level},d.status.label):null,d.in_search===false?el('span',{class:'badge info'},'Hors recherche'):null];
+  const badges=tag?[el('span',{class:'badge new'},tag)]:[d.status?el('span',{class:'badge '+d.status.level},short(d.status).label):null,d.in_search===false?el('span',{class:'badge info'},'Hors recherche'):null];
   return el('button',{type:'button',class:'row',onclick:()=>openPage(d.id,0,null)},icon('doc'),
     el('span',{class:'body'},el('strong',{},d.title),el('span',{class:'meta'},meta),showDomain&&d.domain?el('span',{class:'meta'},d.domain):null,note?el('span',{class:'meta'},note):null,...badges),icon('chev'));
 }
@@ -496,7 +502,7 @@ function renderDocs(){
       pins.length>3?el('button',{type:'button',class:'link small more',onclick:()=>{showAllSaved=!showAllSaved;renderDocs();}},showAllSaved?'Réduire':'Voir les '+pins.length+' pages'):null].filter(Boolean));}
   // Nouveautés du pack (already first in the date sort)
   const fresh=info?docs.filter(d=>newTag(d.id)):[],nb=$('doc-new');nb.hidden=Boolean(f)||docSort==='date'||!fresh.length;
-  if(!nb.hidden){const det=el('details',{class:'section',open:openSections.has(NEW)},el('summary',{},el('span',{},'Nouveaux ou mis à jour · '+fmtDate(info.pack_date)),el('small',{},String(fresh.length))),
+  if(!nb.hidden){const det=el('details',{class:'section',open:openSections.has(NEW)},el('summary',{},el('span',{},'Nouveaux ou mis à jour'),el('small',{},String(fresh.length))),
     el('div',{class:'rows'},...fresh.sort(byTitle).map(d=>docRow(d,{tag:newTag(d.id),showDomain:true}))));
     det.addEventListener('toggle',()=>{det.open?openSections.add(NEW):openSections.delete(NEW);});nb.replaceChildren(det);}
   // All documents
@@ -613,13 +619,16 @@ try{
   // pack-info.json: SPILF check date and the pack's new/updated documents (generated on Sparka into pack/ui/).
   [docs,terms,info]=await Promise.all([fetch(DATA+'docs.json').then(r=>r.ok?r.json():[]).catch(()=>[]),fetch(DATA+'terms.json').then(r=>r.ok?r.json():[]).catch(()=>[]),
     fetch(DATA+'pack-info.json').then(r=>r.ok?r.json():null).catch(()=>null)]);
+  dataDate=(await localManifest().catch(()=>null))?.date||info?.pack_date||null;
   renderFreshness();if(history.state?.view==='docs')renderDocs();
   termsNorm=terms.map(t=>norm(t[0]));vocabSet=new Set(termsNorm.flatMap(t=>t.split(/[^\p{L}]+/u)).filter(Boolean));vocab=terms.filter(t=>!t[0].includes(' ')&&t[0].length>=4).map(t=>[t[0],norm(t[0]),t[1]]);
   if(history.state?.view==='home')renderHome();
-  engineStatus(engine.MODE==='sparka'?'Recherche sur Sparka : préparation…':'Préparation de la recherche sur l’appareil… vous pouvez déjà écrire.');
+  engineStatus(engine.MODE==='sparka'?'Recherche sur Sparka : préparation…':'Préparation de la recherche… vous pouvez déjà écrire.');
   corpus=await engine.load(text=>engineStatus(text+' Vous pouvez déjà écrire.'));
   pageRows=new Map();corpus.rows.forEach((r,i)=>{const k=r.doc+':'+r.page;if(!pageRows.has(k))pageRows.set(k,[]);pageRows.get(k).push(i);});
-  $('about').textContent='Version '+VERSION+' · '+(info?'documents du '+fmtDate(info.pack_date)+', sources SPILF vérifiées le '+fmtDate(info.spilf_checked_at)+' · ':'')+corpus.documents.length+' documents (empreinte '+corpus.fingerprint.slice(0,8)+') · recherche '+engine.MODEL.label+' + BM25'+(engine.MODE==='sparka'?', calculée sur Sparka':', calculée sur l’appareil')+', sans génération de texte.';
+  // Version of the app (number, then the installed shell: the name of its cache) · data date · search model.
+  caches.keys().then(k=>{const shell=k.find(n=>n.startsWith('a2med-shell-'))?.slice(12,19);
+    $('about').textContent='Version '+VERSION+(shell?' ('+shell+')':'')+(dataDate?' · données du '+fmtDate(dataDate):'')+' · Gemma + BM25';}).catch(()=>{});
   fetch(DATA+'texts.json').then(r=>r.ok?r.json():null).then(t=>{texts=t;if(results.length&&history.state?.view==='results')renderResults(),previewBest();}).catch(()=>{});
   window.startup=engine.state.startup;engineStatus('');
   if(pendingQuery){const q=pendingQuery;pendingQuery=null;$('queued').hidden=true;search(q);}
