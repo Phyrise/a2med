@@ -22,24 +22,32 @@ export const MODE=!DEV?'device':(()=>{try{const u=new URLSearchParams(location.s
   if(u)localStorage.setItem(KEY,u==='sparka'?'sparka':'device');return localStorage.getItem(KEY)==='sparka'?'sparka':'device';}catch{return 'device';}})();
 export function setMode(m){try{localStorage.setItem(KEY,m);}catch{}}
 
-export async function load(status=()=>{}){
+// progress(f): 0…1 at each step that can be measured (files read, model weights read); the time between is estimated by app.js.
+export async function load(status=()=>{},progress=()=>{}){
   const t0=performance.now();
   status('Chargement des documents…');
   [corpus,bm,vectors]=await Promise.all([
     fetch(BASE+'pack/corpus-meta.json').then(r=>{if(!r.ok)throw Error('Corpus non installé');return r.json();}),
     fetch(BASE+'pack/bm25.json').then(r=>r.json()),
     MODE==='sparka'?null:fetch(MODEL.vectors).then(r=>{if(!r.ok)throw Error('Index Gemma non installé');return r.arrayBuffer();}).then(b=>new Float32Array(b))]);
-  if(corpus.fingerprint!==FINGERPRINT)throw Error('Corpus différent de celui de l’index');
+  if(corpus.fingerprint!==FINGERPRINT)throw Error('Corpus différent de celui de l’index');progress(.15);
   state.corpus=corpus;state.bm=bm;
   if(MODE==='sparka'){state.startup={model_ms:0,total_ms:performance.now()-t0,mode:MODE};state.ready=true;return corpus;}
   if(vectors.length!==corpus.n*MODEL.dims)throw Error('Index vectoriel incomplet');
   status('Préparation de la recherche…');const t1=performance.now();
   const T=await import('./lib/transformers.web.min.js'),{AutoModel,AutoTokenizer,AutoConfig,env}=T;Tensor=T.Tensor;
   env.allowRemoteModels=false;env.allowLocalModels=true;env.useBrowserCache=false;env.localModelPath=new URL('pack/models/',BASE).pathname;  // a path: Transformers.js joins it like a file path (a full URL loses its //)
+  // Model files are read straight from the downloaded data, not through the service worker: Transformers.js fetches the weights
+  // twice and leaves one response unread, which kept the old worker busy and held back app updates while the app was open.
+  const PACK=BASE+'pack/';
+  env.fetch=async(u,o)=>{const url=new URL(String(u),location.href);url.search='';
+    if(!url.href.startsWith(PACK))return fetch(u,o);
+    return (await (await caches.open('a2med-data')).match(url.href))||new Response('Données non installées',{status:404});};
   env.backends.onnx.wasm.wasmPaths=BASE+'lib/';env.backends.onnx.wasm.numThreads=1;env.backends.onnx.wasm.proxy=false;
-  tokenizer=await AutoTokenizer.from_pretrained(MODEL.id,{local_files_only:true});
+  tokenizer=await AutoTokenizer.from_pretrained(MODEL.id,{local_files_only:true});progress(.25);
   const config=await AutoConfig.from_pretrained(MODEL.id,{local_files_only:true});config.vision_config=config.audio_config=null;
-  model=await AutoModel.from_pretrained(MODEL.id,{config,device:'wasm',dtype:MODEL.dtype,local_files_only:true});
+  const weights=x=>{if(x?.status==='progress'&&/\.onnx(_data)?$/.test(x.file||'')&&Number.isFinite(x.progress))progress(.25+.45*x.progress/100);};
+  model=await AutoModel.from_pretrained(MODEL.id,{config,device:'wasm',dtype:MODEL.dtype,local_files_only:true,progress_callback:weights});progress(1);
   state.startup={model_ms:performance.now()-t1,total_ms:performance.now()-t0};state.ready=true;
   return corpus;
 }

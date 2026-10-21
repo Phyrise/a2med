@@ -15,7 +15,7 @@
 <body>
 <header class="appbar" id="appbar">
   <div class="brand">
-    <button type="button" id="home" class="brand-name" aria-label="Nouvelle question">A²-Med</button>
+    <span class="brand-left"><button type="button" id="home" class="brand-name" aria-label="Nouvelle question">A²-Med</button><button type="button" id="status" class="status-dot loading" aria-label="Préparation de la recherche"><i></i></button></span>
     <button type="button" class="icon" data-settings aria-label="Réglages"><svg class="gear" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
   </div>
   <form id="search" class="search" role="search" autocomplete="off">
@@ -43,7 +43,7 @@
       <button type="button" class="pill" data-q="pneumonie aiguë communautaire durée">PAC · durée</button>
     </div></div>
     <div class="block tip"><p>Décrivez la situation et ce que vous cherchez : <em>posologie</em>, <em>durée</em>, <em>alternative</em>…</p></div>
-    <p class="notice"><span class="fresh-line"></span> · Vérifiez toujours la page originale.</p>
+    <p class="notice">Source : <a class="src" href="https://www.infectiologie.com/fr/recommandations.html" target="_blank" rel="noopener">recommandations de la SPILF</a><span class="fresh-line"></span></p>
   </section>
 
   <section id="v-results" class="view" hidden>
@@ -131,13 +131,12 @@
 <dialog id="settings" aria-labelledby="settings-title">
   <form method="dialog" class="sheet">
     <div class="sheet-head"><h2 id="settings-title">Réglages</h2><button class="icon" aria-label="Fermer"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-    <label>Taille du texte
-      <select id="textsize"><option value="1">Normale</option><option value="1.12">Grande</option><option value="1.25">Très grande</option></select></label>
+    <div class="field"><span id="textsize-label">Taille du texte</span>
+      <div class="sizes" id="textsize" role="radiogroup" aria-labelledby="textsize-label"><button type="button" role="radio" data-v="1">Normale</button><button type="button" role="radio" data-v="1.12">Grande</button><button type="button" role="radio" data-v="1.25">Très grande</button></div></div>
     <label>Calcul de la recherche
       <select id="engine-mode"><option value="device">Sur l’appareil (hors ligne)</option><option value="sparka">Sur Sparka (réseau, test)</option></select></label>
     <div class="row"><button type="button" id="data-open">Données et mises à jour</button></div>
-    <div class="row"><button type="button" id="forget">Effacer l’historique et Mes pages</button></div>
-    <p class="muted small">L’historique reste sur cet appareil. Ne saisissez pas de données patient.</p>
+    <div class="row"><button type="button" id="forget">Effacer l’historique et les pages enregistrées</button></div>
     <p class="muted small" id="about"></p>
   </form>
 </dialog>

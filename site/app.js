@@ -6,7 +6,7 @@ import * as engine from './engine.js';
 import {BASE,DEV} from './config.js';
 import {localManifest} from './data.js';
 
-const VERSION='0.5';
+const VERSION='0.6';
 const DATA=BASE+'pack/ui/';
 
 // ---------- small helpers ----------
@@ -150,6 +150,11 @@ function renderSpelling(){
 
 // ---------- search ----------
 function engineStatus(text,cls=''){const e=$('engine');e.hidden=!text;e.className='engine '+cls;e.textContent=text||'';}
+// State of the search, as a dot next to the app's name: yellow ring filling while it gets ready, green when ready, red when it
+// cannot run (the reason also under the search field). Touch it for the state in words.
+const dot={msg:'Préparation de la recherche'};
+function setDot(state,p,msg){const b=$('status');if(!b)return;b.className='status-dot '+state;b.style.setProperty('--p',Math.round(100*p));
+  dot.msg=msg||(state==='loading'?'Préparation de la recherche · '+Math.round(100*p)+' %':dot.msg);b.setAttribute('aria-label',dot.msg);b.title=dot.msg;}
 function submit(){const q=$('q').value.trim();if(!q)return;$('q').blur();$('assist').hidden=true;
   if(!engine.state.ready){pendingQuery=q;$('queued').hidden=false;$('queued').textContent='« '+q+' » : recherche lancée dès que l’app est prête.';navigate({view:'home'});return;}
   search(q);}
@@ -471,7 +476,7 @@ function showText(){
 }
 
 // ---------- Question tab home ----------
-const fmtDate=iso=>new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+const fmtDate=(iso,month='long')=>new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month,year:'numeric',timeZone:'UTC'});
 // One date in the app: the data version (the manifest the phone installed), the same as in « Données et mises à jour ».
 let dataDate=null;
 function renderFreshness(){const t=dataDate?'Données du '+fmtDate(dataDate):'';for(const n of document.querySelectorAll('.fresh-line'))n.textContent=t;}
@@ -572,10 +577,12 @@ window.a2medBack=()=>{
 // Light theme only (Arthur, 2026-10-21): no appearance choice; only the text size is a setting.
 function applyTheme(){document.documentElement.style.setProperty('--scale',store.get('a2med-textsize','1'));}
 function initSettings(){
-  $('textsize').value=store.get('a2med-textsize','1');
-  $('textsize').onchange=e=>{store.set('a2med-textsize',e.target.value);applyTheme();};
+  // The three sizes side by side, the current one outlined.
+  const sizes=[...$('textsize').querySelectorAll('button')];
+  const showSize=()=>{const v=store.get('a2med-textsize','1');for(const b of sizes)b.setAttribute('aria-checked',String(b.dataset.v===v));};
+  for(const b of sizes)b.onclick=()=>{store.set('a2med-textsize',b.dataset.v);applyTheme();showSize();};showSize();
   $('engine-mode').closest('label').hidden=!DEV;$('engine-mode').value=engine.MODE;$('engine-mode').onchange=e=>{engine.setMode(e.target.value);location.reload();};  // the model is loaded (or not) at start
-  $('forget').onclick=()=>{if(!confirm('Effacer l’historique des recherches et toutes les pages enregistrées (Mes pages) ?'))return;store.set(RECENT,[]);store.set(SAVED,[]);renderHome();if(history.state?.view==='docs')renderDocs();toast('Historique et Mes pages effacés');};
+  $('forget').onclick=()=>{if(!confirm('Effacer l’historique des recherches et toutes les pages enregistrées ?'))return;store.set(RECENT,[]);store.set(SAVED,[]);renderHome();if(history.state?.view==='docs')renderDocs();toast('Historique et pages enregistrées effacés');};
 }
 
 // ---------- wiring ----------
@@ -615,6 +622,14 @@ function wire(){
 applyTheme();wire();history.replaceState({view:'home'},'');apply({view:'home'});
 if(window.a2medDevBridge){const b=el('div',{class:'dev'},'Aperçu Mac · moteur 0.4 (Gemma 1 Q4 512D + BM25)');document.body.append(b);setTimeout(()=>b.style.opacity='0',4000);}
 window.runSearch=search;
+// Progress: the steps engine.js can measure, and in between an estimate from how long the last start took on this device.
+const STARTUP='a2med-startup-ms',started=performance.now(),expected=Math.max(1500,+store.get(STARTUP,4000)||4000);
+let measured=0,measuredAt=started,shown=0;
+// After each measured step the ring keeps creeping toward 95 % (the last step, preparing the model, reports nothing), never back.
+const tick=()=>{const now=performance.now();shown=Math.max(shown,.9*Math.min(1,(now-started)/expected),
+  measured+(.95-measured)*(1-Math.exp(-(now-measuredAt)/Math.max(1000,expected/3))));setDot('loading',Math.min(shown,.95));};
+$('status').onclick=()=>toast(dot.msg);
+const ticker=setInterval(tick,120);
 try{
   // pack-info.json: SPILF check date and the pack's new/updated documents (generated on Sparka into pack/ui/).
   [docs,terms,info]=await Promise.all([fetch(DATA+'docs.json').then(r=>r.ok?r.json():[]).catch(()=>[]),fetch(DATA+'terms.json').then(r=>r.ok?r.json():[]).catch(()=>[]),
@@ -623,14 +638,14 @@ try{
   renderFreshness();if(history.state?.view==='docs')renderDocs();
   termsNorm=terms.map(t=>norm(t[0]));vocabSet=new Set(termsNorm.flatMap(t=>t.split(/[^\p{L}]+/u)).filter(Boolean));vocab=terms.filter(t=>!t[0].includes(' ')&&t[0].length>=4).map(t=>[t[0],norm(t[0]),t[1]]);
   if(history.state?.view==='home')renderHome();
-  engineStatus(engine.MODE==='sparka'?'Recherche sur Sparka : préparation…':'Préparation de la recherche… vous pouvez déjà écrire.');
-  corpus=await engine.load(text=>engineStatus(text+' Vous pouvez déjà écrire.'));
+  corpus=await engine.load(()=>{},f=>{if(f>measured){measured=f;measuredAt=performance.now();}});
+  clearInterval(ticker);store.set(STARTUP,Math.round(performance.now()-started));
+  setDot('ready',1,'Recherche prête · '+(engine.MODE==='sparka'?'calcul sur Sparka':'hors ligne'));
   pageRows=new Map();corpus.rows.forEach((r,i)=>{const k=r.doc+':'+r.page;if(!pageRows.has(k))pageRows.set(k,[]);pageRows.get(k).push(i);});
-  // Version of the app (number, then the installed shell: the name of its cache) · data date · search model.
-  caches.keys().then(k=>{const shell=k.find(n=>n.startsWith('a2med-shell-'))?.slice(12,19);
-    $('about').textContent='Version '+VERSION+(shell?' ('+shell+')':'')+(dataDate?' · données du '+fmtDate(dataDate):'')+' · Gemma + BM25';}).catch(()=>{});
+  // Version of the app · data date · search model, on one line (short month so it fits a 375 px phone).
+  $('about').textContent='Version '+VERSION+(dataDate?' · données du '+fmtDate(dataDate,'short'):'')+' · Gemma + BM25';
   fetch(DATA+'texts.json').then(r=>r.ok?r.json():null).then(t=>{texts=t;if(results.length&&history.state?.view==='results')renderResults(),previewBest();}).catch(()=>{});
-  window.startup=engine.state.startup;engineStatus('');
+  window.startup=engine.state.startup;
   if(pendingQuery){const q=pendingQuery;pendingQuery=null;$('queued').hidden=true;search(q);}
   if(new URLSearchParams(location.search).has('bench'))runBench();
-}catch(e){engineStatus('Recherche indisponible : '+e.message,'error');}
+}catch(e){clearInterval(ticker);setDot('error',0,'Recherche indisponible : '+e.message);engineStatus(dot.msg,'error');}

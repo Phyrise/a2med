@@ -28,6 +28,17 @@ h2{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mu
 .appbar.scrolled{border-bottom-color:var(--line)}
 .brand{display:flex;align-items:center;justify-content:space-between;min-height:44px}
 .brand-name{font-weight:800;font-size:1.15rem;letter-spacing:-.01em;min-height:44px}
+.brand-left{display:flex;align-items:center}
+/* Search state next to the name: a ring that fills (--p, 0-100) around a blinking yellow dot, then a green or red dot */
+.status-dot{width:40px;height:44px;display:grid;place-items:center;border:0;background:none;padding:0;margin-left:2px;--dot:#c79a2a;--track:rgba(199,154,42,.22)}
+.status-dot i{position:relative;width:18px;height:18px}
+.status-dot i::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--dot) calc(var(--p,0)*1%),var(--track) 0);
+  -webkit-mask:radial-gradient(circle,transparent 6px,#000 6.5px);mask:radial-gradient(circle,transparent 6px,#000 6.5px);transition:opacity .4s}
+.status-dot i::after{content:"";position:absolute;inset:5.5px;border-radius:50%;background:var(--dot);transition:inset .3s,background .3s}
+.status-dot.loading i::after{animation:blink 1.2s ease-in-out infinite}
+.status-dot.ready{--dot:#1f9d55}.status-dot.error{--dot:#c0392b}
+.status-dot.ready i::before,.status-dot.error i::before{opacity:0}
+.status-dot.ready i::after,.status-dot.error i::after{inset:4.5px}
 .search{display:flex;align-items:flex-start;gap:4px;background:var(--surface);border:1.5px solid var(--field);border-radius:16px;padding:4px 4px 4px 12px;box-shadow:var(--shadow)}
 .search:focus-within{border-color:var(--accent)}
 .search .lens{color:var(--muted);width:20px;height:20px;margin-top:13px;flex:none}
@@ -180,6 +191,11 @@ dialog::backdrop{background:rgba(5,10,14,.45)}
 .sheet-head{display:flex;justify-content:space-between;align-items:center}
 .sheet-head h2{font-size:1.05rem;text-transform:none;letter-spacing:0;color:var(--text);margin:0}
 .sheet label{display:grid;gap:6px;font-size:.88rem;font-weight:600}
+.sheet .field{display:grid;gap:6px;font-size:.88rem;font-weight:600}
+.sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.sizes button{min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--muted);font-weight:500}
+.sizes button[data-v="1.12"]{font-size:1.06em}.sizes button[data-v="1.25"]{font-size:1.12em}
+.sizes button[aria-checked="true"]{border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
 .sheet select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);font-weight:400}
 .sheet .row{display:flex;gap:8px;flex-wrap:wrap;padding:0;border:0;background:none;min-height:0}
 .sheet .row button{border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-height:44px}
@@ -203,6 +219,8 @@ dialog::backdrop{background:rgba(5,10,14,.45)}
 .dhead h1{font-size:1.35rem}
 .fresh{margin:0 0 12px;font-size:.8rem;color:var(--muted)}
 .fresh-line:empty{display:none}
+.notice .fresh-line::before{content:" · "}
+.notice .src{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;margin-bottom:14px}
 .seg button{flex:1;padding:8px 6px;border-radius:9px;font-size:.88rem;min-height:44px;color:var(--muted)}
 .seg button[aria-checked=true]{background:var(--surface);color:var(--text);box-shadow:var(--shadow);font-weight:650}
