@@ -61,15 +61,19 @@ async function start(){
   if(!('serviceWorker' in navigator)||!window.caches){document.body.textContent='Ce navigateur ne permet pas l’usage hors ligne.';return;}
   // Installed app: never wait for the network (none, or a slow one). The browser looks for a new sw.js (new app version) in the
   // background and the host's manifest is checked once the app is up; only a first download (or ?donnees) waits for the host.
+  // First visit: the service worker copies the app (~19 MB) in the background while the data panel is already shown; the app
+  // itself only starts once it is served from the phone (the panel's download takes longer anyway).
   const reg=navigator.serviceWorker.register(new URL('sw.js',import.meta.url));reg.catch(()=>{});
-  if(!navigator.serviceWorker.controller){await reg;await new Promise(r=>navigator.serviceWorker.addEventListener('controllerchange',r,{once:true}));}
+  const served=navigator.serviceWorker.controller?null:reg.then(()=>new Promise(r=>navigator.serviceWorker.addEventListener('controllerchange',r,{once:true})));
   const local=await data.localManifest(),own=local?await data.plan(local,null):{complete:false};
   if(!own.complete||new URLSearchParams(location.search).has('donnees')){
+    if(!local)panel().querySelector('.in').innerHTML='<h1>Installer les données</h1><p>Recherche des données disponibles…</p>';
     const remote=await data.remoteManifest();
     if(!local&&!remote){document.body.textContent='Connexion nécessaire pour le premier téléchargement des données.';return;}
     const p=await data.plan(local,remote);
     await showData(local,remote,p,{closable:p.complete});if(!p.complete)return;
   }
+  if(served)await served;
   await import('./web-bridge.js');await import('./app.js');
   let state={remote:null,p:own},banner=null,checked=0;
   // From Réglages: what the host announces right now (offline: what we last knew, and no download offered).
