@@ -75,6 +75,11 @@ async function start(){
   }
   keep();  // data installed: is it protected? (app.js only resolves once the model is loaded)
   if(served)await served;
+  // New app version: the browser looks for a new sw.js only when the page loads, and an installed app coming back to the screen
+  // is resumed, not reloaded. So look for it on return too; once the new version has taken over, offer to switch (a tap).
+  const switchTo=()=>{if(document.getElementById('new-version'))return;const t=document.createElement('button');t.id='new-version';t.className='toast';
+    t.style.cssText='border:0;font:inherit;z-index:61';t.textContent='Nouvelle version de l’app : toucher pour l’utiliser';t.onclick=()=>location.reload();document.body.append(t);};
+  navigator.serviceWorker.addEventListener('controllerchange',switchTo);  // from here on: a new version (the first one is awaited above)
   await import('./web-bridge.js');await import('./app.js');
   let state={remote:null,p:own},banner=null,checked=0;
   // From Réglages: what the host announces right now (offline: what we last knew, and no download offered).
@@ -87,8 +92,8 @@ async function start(){
   };
   const check=async()=>{checked=Date.now();const r=await data.remoteManifest();if(r)state={remote:r,p:await data.plan(local,r)};return Boolean(r);}; // offline: keep what we know
   check().then(offer);
-  // The manifest is a few kB: look again whenever the app comes back to the screen (at most once a minute).
-  document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&Date.now()-checked>60000){await check();offer();}});
+  // The manifest and sw.js are a few kB: look again whenever the app comes back to the screen (at most once a minute).
+  document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&Date.now()-checked>60000){reg.then(r=>r.update()).catch(()=>{});await check();offer();}});
 }
 // The downloaded data stay only as long as the browser keeps them. Ask for protected storage; if it is refused, the home screen
 // suggests installing the app (Chrome protects installed apps; on iPhone only a home-screen app keeps its data for good).
