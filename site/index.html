@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>A²-Med</title>
+<meta name="theme-color" content="#f4f6f8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="A²-Med">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="appbar" id="appbar">
+  <div class="brand">
+    <button type="button" id="home" class="brand-name" aria-label="Nouvelle question">A²-Med</button>
+    <button type="button" class="icon" data-settings aria-label="Réglages"><svg class="gear" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
+  </div>
+  <form id="search" class="search" role="search" autocomplete="off">
+    <svg class="lens" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+    <textarea id="q" rows="1" enterkeyhint="search" maxlength="500" placeholder="Ex. : PAC durée amoxicilline" aria-label="Question ou mots-clés" spellcheck="false" autocapitalize="off"></textarea>
+    <button type="button" id="clear" class="icon small" aria-label="Effacer" hidden><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <button id="go" class="go" aria-label="Rechercher"><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+  </form>
+  <p id="engine" class="engine" role="status" aria-live="polite" hidden></p>
+  <div id="assist" class="assist" hidden>
+    <ul id="suggest" class="suggest" role="listbox" aria-label="Suggestions"></ul>
+    <div id="chips" class="chips"></div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Tab 1: Question -->
+  <section id="v-home" class="view">
+    <p id="queued" class="note" hidden></p>
+    <div class="block" id="recent-block" hidden><h2>Récentes</h2><div id="recent" class="pills"></div></div>
+    <div class="block" id="first-block" hidden><h2>Exemples</h2><div class="pills">
+      <button type="button" class="pill" data-q="endocardite sur prothèse traitement probabiliste">Endocardite sur prothèse · probabiliste</button>
+      <button type="button" class="pill" data-q="méningite allergie bêta-lactamines alternative">Méningite · allergie aux bêta-lactamines</button>
+      <button type="button" class="pill" data-q="pneumonie aiguë communautaire durée">PAC · durée</button>
+    </div></div>
+    <div class="block tip"><p>Écrivez la situation et ce que vous cherchez : <em>posologie</em>, <em>durée</em>, <em>alternative</em>… L’app retrouve les pages les plus proches dans les recommandations.</p></div>
+    <p class="notice"><span class="fresh-line"></span><br>Pages originales, sur l’appareil et hors ligne. Aucune réponse rédigée automatiquement : vérifiez toujours la page.</p>
+  </section>
+
+  <section id="v-results" class="view" hidden>
+    <p id="rsum" class="rsum"></p>
+    <p id="spell" class="spell" hidden></p>
+    <div id="skeleton" class="skeleton" hidden><div></div><div></div><div></div></div>
+    <article id="best" class="best" hidden></article>
+    <h2 id="others-title" class="others-title" hidden>Autres pages</h2>
+    <div id="others" class="rows"></div>
+    <div id="after" class="after" hidden>
+      <span>Aucune page ne convient ?</span>
+      <button type="button" class="link" data-tab="docs">Parcourir les documents</button>
+    </div>
+  </section>
+
+  <!-- Tab 2: Documents -->
+  <section id="v-docs" class="view" hidden>
+    <div class="dhead">
+      <h1>Documents</h1>
+      <button type="button" class="icon" data-settings aria-label="Réglages"><svg class="gear" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    </div>
+    <p class="fresh"><span class="fresh-line"></span></p>
+    <input id="doc-filter" type="search" enterkeyhint="search" placeholder="Titre ou mot : cystite, PNA…" aria-label="Chercher un document par son titre ou un mot de son contenu">
+    <div class="seg" role="radiogroup" aria-label="Trier les documents">
+      <button type="button" role="radio" data-sort="section" aria-checked="true">Par section</button>
+      <button type="button" role="radio" data-sort="title" aria-checked="false">Par titre</button>
+      <button type="button" role="radio" data-sort="date" aria-checked="false">Par date</button>
+    </div>
+    <div id="doc-saved" class="dblock" hidden></div>
+    <div id="doc-new" class="dblock" hidden></div>
+    <div id="doc-list"></div>
+  </section>
+</main>
+
+<nav id="tabs" class="tabs" aria-label="Onglets">
+  <button type="button" data-tab="question" aria-current="page"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg><span>Question</span></button>
+  <button type="button" data-tab="docs"><svg viewBox="0 0 24 24"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H10l2 2h6.5c.8 0 1.5.7 1.5 1.5v11c0 .8-.7 1.5-1.5 1.5h-13C4.7 20 4 19.3 4 18.5z"/></svg><span>Documents</span></button>
+</nav>
+
+<section id="v-page" class="reader" hidden aria-label="Lecture de la page">
+  <header class="rbar">
+    <button type="button" class="icon" data-back aria-label="Retour"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <div class="rtitle"><strong id="r-title"></strong><span id="r-meta"></span></div>
+    <button type="button" class="icon" id="r-save" aria-label="Enregistrer dans Mes pages" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M7 3h10v18l-5-4-5 4z"/></svg></button>
+    <button type="button" class="icon" id="r-more" aria-label="Plus d’options" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg></button>
+    <div id="r-menu" class="menu" role="menu" hidden>
+      <button type="button" role="menuitem" id="m-text">Texte de la page</button>
+      <button type="button" role="menuitem" id="m-copy">Copier la référence</button>
+      <button type="button" role="menuitem" id="m-pdf">Ouvrir le PDF complet</button>
+    </div>
+  </header>
+  <button type="button" id="r-status" class="status" aria-expanded="false" hidden></button>
+  <div id="stage" class="stage" tabindex="0" aria-label="Page originale. Pincer ou toucher deux fois pour zoomer, glisser pour changer de page.">
+    <div id="track" class="track">
+      <div class="slot prev" aria-hidden="true"><img id="img-prev" class="nb" alt=""></div>
+      <div class="slot"><div id="frame" class="frame"><img id="img" alt=""></div></div>
+      <div class="slot next" aria-hidden="true"><img id="img-next" class="nb" alt=""></div>
+    </div>
+    <div id="column" class="column" hidden></div>
+    <div id="stage-status" class="stage-status" role="status"></div>
+    <button type="button" id="back-hit" class="chip-s" hidden>↩ Page trouvée</button>
+  </div>
+  <footer class="rnav">
+    <div id="hitnav" class="hitnav" hidden>
+      <button type="button" id="prev-hit" aria-label="Résultat précédent">‹ Précédent</button>
+      <span id="hit-pos"></span>
+      <button type="button" id="next-hit" aria-label="Résultat suivant">Suivant ›</button>
+    </div>
+    <div class="pagerow">
+      <button type="button" id="prev-page" aria-label="Page précédente"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button type="button" id="pageinfo" aria-label="Aller à une page"></button>
+      <button type="button" id="next-page" aria-label="Page suivante"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+  </footer>
+</section>
+
+<dialog id="textsheet" aria-labelledby="text-title">
+  <form method="dialog" class="sheet">
+    <div class="sheet-head"><h2 id="text-title">Texte de la page</h2><button class="icon" aria-label="Fermer"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <p class="muted small">Extrait automatiquement du document : mise en page et tableaux peuvent être altérés. Vérifiez sur la page.</p>
+    <div id="text-body" class="textbody"></div>
+  </form>
+</dialog>
+
+<dialog id="settings" aria-labelledby="settings-title">
+  <form method="dialog" class="sheet">
+    <div class="sheet-head"><h2 id="settings-title">Réglages</h2><button class="icon" aria-label="Fermer"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <label>Taille du texte
+      <select id="textsize"><option value="1">Normale</option><option value="1.12">Grande</option><option value="1.25">Très grande</option></select></label>
+    <label>Calcul de la recherche
+      <select id="engine-mode"><option value="device">Sur l’appareil (hors ligne)</option><option value="sparka">Sur Sparka (réseau, test)</option></select></label>
+    <div class="row"><button type="button" id="data-open">Données et mises à jour</button></div>
+    <div class="row"><button type="button" id="forget">Effacer l’historique et Mes pages</button></div>
+    <p class="muted small">Recherches et pages enregistrées restent sur cet appareil. N’y saisissez pas d’information permettant d’identifier un patient.</p>
+    <p class="muted small" id="about"></p>
+  </form>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script type="module" src="boot.js"></script>
+</body>
+</html>

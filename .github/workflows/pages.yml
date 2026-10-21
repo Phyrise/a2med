@@ -1,0 +1,28 @@
+# Publishes site/ as it is on GitHub Pages (https://phyrise.github.io/a2med/) at each push to main. No build step and no
+# Jekyll: site/ is built on the Mac by webapp_proto_001/build_github.py. Settings → Pages → Source must be « GitHub Actions ».
+name: Publier le site
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

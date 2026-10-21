@@ -1,0 +1,26 @@
+{
+ "pack_date": "2026-10-20",
+ "spilf_checked_at": "2026-10-19T09:32:29Z",
+ "spilf_check_scope": "pages Recommandations, Diaporamas et Archives d'infectiologie.com",
+ "updated": [
+  39,
+  59,
+  105
+ ],
+ "added": [
+  117,
+  118
+ ],
+ "search": {
+  "model": "embeddinggemma-300m model_q4 (Gemma 1 Q4)",
+  "dimensions": 512,
+  "lexical": "BM25",
+  "fusion": "RRF 1/(61+r), top 50, unchanged"
+ },
+ "corpus_fingerprint": "45e2c39e21ac7764151a9d98b67ca6aa6302cc2282acd0b9dacb44b38fb01e67",
+ "provenance": [
+  "corpus_watch_20261019/FINAL-SUMMARY.json",
+  "corpus-update-20261020/source-manifest.json",
+  "embedding-candidates-768-256-001/vectors/eg1-q4/vectors-768.bin"
+ ]
+}
