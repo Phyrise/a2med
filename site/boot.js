@@ -1,6 +1,7 @@
 // Start of the web app: register the service worker, make sure the data is installed (first download or update), then load
 // the same interface as the Android app (app.js) with the pdf.js bridge. The data panel also opens from Réglages.
 import * as data from './data.js';
+import {NS} from './config.js';
 
 const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1;
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
@@ -104,14 +105,14 @@ addEventListener('appinstalled',()=>{installEvent=null;keep();});
 async function keep(){
   const box=document.getElementById('keep');if(!box)return;
   let safe=false;try{safe=await navigator.storage.persisted()||await navigator.storage.persist();}catch{}
-  let later=0;try{later=+(localStorage.getItem('a2med.keep-later')||0);}catch{}
+  let later=0;try{later=+(localStorage.getItem(NS+'.keep-later')||0);}catch{}
   if(safe||Date.now()-later<7*864e5){box.hidden=true;return;}
   box.querySelector('p').textContent=standalone?'Le téléphone peut effacer les données de l’app s’il manque de place.'
     :ios?'Pour garder les données : Partager → « Sur l’écran d’accueil », puis ouvrez l’app depuis l’icône.'
     :'Installez l’app pour garder ses données'+(installEvent?'.':' : menu ⋮ → « Installer l’application ».');
   const act=box.querySelector('.act');act.hidden=!installEvent;
   act.onclick=async()=>{const e=installEvent;if(!e)return;e.prompt();const {outcome}=await e.userChoice;if(outcome==='accepted'){installEvent=null;box.hidden=true;}};
-  box.querySelector('.later').onclick=()=>{try{localStorage.setItem('a2med.keep-later',String(Date.now()));}catch{}box.hidden=true;};
+  box.querySelector('.later').onclick=()=>{try{localStorage.setItem(NS+'.keep-later',String(Date.now()));}catch{}box.hidden=true;};
   box.hidden=false;
 }
 start().catch(e=>{document.body.textContent='Démarrage impossible : '+e.message;});

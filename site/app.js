@@ -1,18 +1,25 @@
-// A²-Med — final interface, 0.4.1 (UI of final-ui-001 + Pixel feedback of 2026-10-21). Built from 0.3. Two tabs: Question (search, best page first) and Documents (browse, sort).
+// A²-Med 0.7 (release candidate, webapp_rc_0.7) = the « urgence » interface of webapp_proto_002_urgence (22/10), built from 0.6,
+// with the TC_i8 dense index (engine.js, pack-006). BM25, fusion and page grouping are 0.6's.
+// Changes for use in a hurry: need buttons (posologie, durée…) under the field, names of diseases / anti-infectives / germs from the
+// pack while typing, frequent situations and reference tables on the home screen, the best page with its key lines (doses and durations
+// stand out), pages 2–3 on one line each, 4–5 folded, a readable state (« Prêt · hors ligne »).
+// Two tabs: Question (search, best page first) and Documents (browse, sort).
 // A dedicated reader for any page. No LLM, no generated text, no feedback collection.
 // The ranking lives in engine.js (Gemma 1 Q4 512D + BM25); this file only knows load(), search() and known().
 if(!window.Local)await import('./dev-bridge.js');
 import * as engine from './engine.js';
-import {BASE,DEV} from './config.js';
+import {BASE,DEV,NS} from './config.js';
 import {localManifest} from './data.js';
 
-const VERSION='0.6';
+const VERSION='0.7';
 const DATA=BASE+'pack/ui/';
 
 // ---------- small helpers ----------
 const $=id=>document.getElementById(id);
 function el(tag,props={},...kids){const n=document.createElement(tag);for(const [k,v] of Object.entries(props)){if(k==='class')n.className=v;else if(k.startsWith('on'))n.addEventListener(k.slice(2),v);else if(v!=null&&v!==false)n.setAttribute(k,v===true?'':v);}for(const k of kids.flat())if(k!=null&&k!==false)n.append(k);return n;}
 const norm=s=>s.normalize('NFD').replace(/\p{Mn}/gu,'').toLowerCase();
+const words=v=>(norm(v).match(/[\p{L}\p{N}]+/gu)||[]);  // plain words, for comparing what is typed with names and needs
+const hasWord=(v,w)=>(' '+words(v).join(' ')+' ').includes(' '+words(w).join(' ')+' ');
 const STOP=new Set(norm('quel quelle quels quelles est sont le la les un une des de du au aux à dans sur pour par et ou que qui quoi ce cette ces il elle on en d l chez avec sans faut faire comment combien').split(' '));
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch{return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
 let toastTimer;function toast(text){const t=$('toast');t.textContent=text;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,2600);}
@@ -22,10 +29,28 @@ const icon=name=>{const s=document.createElementNS('http://www.w3.org/2000/svg',
 // Abbreviations are offered, never applied silently. List to validate with Alexia (same as 0.3).
 const ABBR={ei:'endocardite infectieuse',pna:'pyélonéphrite aiguë',pac:'pneumonie aiguë communautaire',iu:'infection urinaire',ium:'infection urinaire masculine',ioa:'infection ostéo-articulaire',idv:'infection disco-vertébrale',pth:'prothèse totale de hanche',ptg:'prothèse totale de genou',sarm:'Staphylococcus aureus résistant à la méticilline',sams:'Staphylococcus aureus sensible à la méticilline',blse:'bêta-lactamase à spectre étendu',epc:'entérobactérie productrice de carbapénémase',bhre:'bactérie hautement résistante émergente',icd:'infection à Clostridioides difficile',iim:'infection invasive à méningocoque',dhbnn:'dermohypodermite bactérienne non nécrosante',atb:'antibiothérapie',abp:'antibioprophylaxie',vzv:'varicelle zona',ist:'infection sexuellement transmissible',igh:'infection génitale haute',lcr:'liquide cérébrospinal',tb:'tuberculose',dfg:'débit de filtration glomérulaire'};
 
+// Urgence prototype (to validate with Arthur): what the doctor needs, one tap each — the words are added to the search.
+const NEEDS=[['Posologie','posologie'],['Durée','durée'],['1re intention','première intention'],['Allergie','allergie bêta-lactamines'],['Grossesse','grossesse'],
+  ['Enfant','enfant'],['Insuffisance rénale','insuffisance rénale'],['Alternative','alternative'],['Prophylaxie','prophylaxie']];
+// Lines of a page that answer a need (used to choose the key lines shown under the best page, never to rank pages).
+const NEED_RX={'posologie':/\d\s?(mg|g|µg|UI)\b|mg\/kg|posologi|\bdoses?\b/iu,'durée':/\d\s?(j|jours?|semaines?|mois|h)\b|durée/iu,
+  'première intention':/premi[eè]re intention|1(re|ère) intention/iu,'allergie bêta-lactamines':/allergi|b[eê]ta-?lactam|p[ée]nicilline/iu,'grossesse':/grossesse|enceinte/iu,
+  'enfant':/enfant|p[ée]diatr|nourrisson|mg\/kg/iu,'insuffisance rénale':/r[ée]nal|clairance|DFG|ml\/min/iu,'alternative':/alternative|allergi|en cas d/iu,'prophylaxie':/prophyla/iu};
+// Frequent situations (home screen): the words put in the field, then a need or the arrow. Each has its SPILF document in pack-005.
+const SUBJECTS=[['Pneumonie (PAC)','pneumonie aiguë communautaire'],['Pyélonéphrite','pyélonéphrite'],['Cystite','cystite'],['IU masculine','infections urinaires masculines'],
+  ['Méningite','méningite bactérienne'],['Endocardite','endocardite'],['Dermohypodermite','dermohypodermite'],['Péritonite','péritonite'],
+  ['Arthrite septique','arthrite septique'],['Pied diabétique','pied diabétique'],['Paludisme','paludisme'],['Contact méningocoque','méningocoque sujet contact']];
+// Reference tables opened directly: start of the title in the pack's docs.json, short label (not shown if the pack has no such document).
+const SHEETS=[['Posologies standard et fortes posologies','Posologies'],['Durées des traitements antibiotiques','Durées'],['Allergie aux antibiotiques','Allergies'],['Antibiothérapie pédiatrique','Pédiatrie']];
+// Doses, durations, intervals: shown in bold in the key lines (« 1 g x 3/j », « 7 jours », « 15 mg/kg »).
+const NUM=/(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?(?:\s?(?:à|-|–)\s?\d+(?:[.,]\d+)?)?\s?(?:mg\/kg(?:\/j(?:our)?)?|mg\/j|g\/j|mg|g|µg|UI|mL|ml|mmol|jours?|j|semaines?|sem|mois|heures?|h|min)(?:\s?(?:x|×)\s?\d+(?:\s?\/\s?(?:j|jour|24\s?h))?)?(?:\s?\/\s?(?:j|jour|24\s?h|12\s?h|8\s?h|6\s?h))?(?![\p{L}\p{N}])/gu;
+let lexicon=[];  // [name, kind, pages] from lexicon.json (tools/build_lexicon.py): names the pack contains
+let antiSet=null;const antiWords=()=>antiSet?.size?antiSet:antiSet=new Set(lexicon.filter(e=>e[1]==='anti-infectieux').map(e=>words(e[0])[0]).filter(w=>w!=='acide'));  // main word of each anti-infective
+
 // ---------- state ----------
 let corpus=null,docs=[],terms=[],termsNorm=[],vocab=[],vocabSet=new Set(),texts=null,pageRows=null,info=null;
 let pendingQuery=null,busy=false,query='',results=[],lexicalHits=0,cur=null,lastQuestionView='home';
-const RECENT='a2med-recent',SAVED='a2med-pins',SORT='a2med-doc-sort';  // same keys as 0.3 for recent searches and saved pages; texts.json is aligned with corpus.rows
+const RECENT=NS+'-recent',SAVED=NS+'-pins',SORT=NS+'-doc-sort';  // same keys as 0.3 for recent searches and saved pages; texts.json is aligned with corpus.rows
 
 // ---------- labels ----------
 const docOf=i=>docs[i]||{title:corpus?.documents[i]?.source||'Document',kind:'',year:null,source:'',pages:corpus?.documents[i]?.pages||1,status:null,changed_pages:[],domain:''};
@@ -53,6 +78,55 @@ function bestSnippet(text,qt,max=280){
   return out;
 }
 function highlighted(text,qt){const f=document.createDocumentFragment();for(const tok of text.match(/[\p{L}\p{N}]+|[^\p{L}\p{N}]+/gu)||[]){const n=norm(tok);f.append(/[\p{L}\p{N}]/u.test(tok)&&qt.some(t=>matches(n,t))?el('mark',{},tok):tok);}return f;}
+// Query words marked, doses and durations in bold.
+function rich(text,qt){const f=document.createDocumentFragment();let at=0;
+  for(const m of text.matchAll(NUM)){if(m.index>at)f.append(highlighted(text.slice(at,m.index),qt));f.append(el('b',{class:'num'},m[0]));at=m.index+m[0].length;}
+  if(at<text.length)f.append(highlighted(text.slice(at),qt));return f;}
+// Up to n lines of the page that best match the search: query words, then the need asked (posologie → lines with doses…), in page order.
+// A piece of at most max characters, starting `lead` characters before the first word of the search it contains — a word that
+// names the subject (amoxicilline, méningite) rather than a need word (posologie, durée) when there is one.
+const UNIT=new Set(['mg','g','kg','ml','ui','j','h','jour','jours','mmol','l','µg']);
+const NEED_WORDS=new Set(NEEDS.flatMap(x=>words(x[1])));
+function cut(out,qt,max,lead=60){if(out.length<=max)return out;const w=norm(out);
+  const first=terms=>{for(const m of w.matchAll(/[\p{L}\p{N}]+/gu))if(terms.some(t=>matches(m[0],t)))return m.index;return -1;};
+  const any=first(qt);let at=any>=0&&any<=20?0:first(qt.filter(t=>!NEED_WORDS.has(t)));if(at<0)at=Math.max(0,any);  // a line that opens on a search word is shown from its start
+  let s=Math.max(0,at-lead);if(s){const sp=out.indexOf(' ',s);if(sp>0&&sp-s<25&&sp<at)s=sp+1;}let e=Math.min(out.length,s+max);const ep=out.lastIndexOf(' ',e);if(e<out.length&&ep>s+max/2)e=ep;
+  return (s?'… ':'')+out.slice(s,e)+(e<out.length?' …':'');}
+// Lines of a page. Slides: one line per bullet with its sub-items attached (« > … », more indented lines, or the items after a line
+// ending with « : »), so that « Pyélonéphrite aiguë non compliquée » comes with its durations. PDF pages: the wrapped lines joined,
+// then one sentence each (a table becomes a run of text, cut later around the query words). Titles (« # … ») are kept apart.
+function pageLines(text,slides){
+  // Extraction marks out: **bold**, bullets, the pipes and rules of Markdown tables, and web addresses.
+  const clean=l=>l.replace(/\*\*/g,'').replace(/https?:\/\/\S+/g,'').replace(/\*(\S[^*]*?\S)\*/g,'$1').replace(/^\s*(#+|>+|[•▪●◦·*\-–]|o(?=\s))\s*/,'').replace(/\|\s*:?-{3,}:?\s*/g,'|').replace(/\s*(\|\s*)+/g,' | ')
+    .replace(/^\s*\|\s*|\s*\|\s*$/g,'').replace(/\s+/g,' ').trim(),out=[];
+  if(!slides){for(const s of text.replace(/\s*\n\s*/g,' ').split(/(?<=[.;!?])\s+/))if(clean(s))out.push({s:clean(s),head:false});return out;}
+  let parent=null;
+  for(const raw of text.split('\n')){const c=clean(raw);if(!c)continue;
+    const m=raw.match(/^(\s*)(>+|[•▪●◦·*\-–]|o(?=\s))?/),indent=m[1].length,mark=m[2]||'',head=/^\s*#/.test(raw);
+    if(parent&&!head&&(mark.startsWith('>')||indent>parent.indent||(parent.colon&&mark&&!parent.mark))){
+      parent.s+=(parent.kids?' ; ':parent.colon?' ':' — ')+c;parent.kids=true;continue;}
+    parent={s:c,head,indent,mark,colon:/:\s*$/.test(c),kids:false};out.push(parent);}
+  return out;
+}
+const near=(a,list)=>{const A=new Set(words(a));return list.some(b=>{const B=new Set(words(b.s));let k=0;for(const w of A)if(B.has(w))k++;return k/Math.max(1,Math.min(A.size,B.size))>.7;});};
+// Up to n lines of the page that best match the search: query words, then the need asked (posologie → lines with doses…), in page
+// order. A slide whose matching lines are short is completed by its lines that give choices or numbers (« 1er choix : … », « 7 jours »).
+function keyLines(text,qt,needs,n=3,slides=true){
+  if(!text)return [];
+  const lines=pageLines(text,slides).map((x,i)=>{const ws=norm(x.s).match(/[\p{L}\p{N}]+/gu)||[];const hit=qt.filter(t=>ws.some(w=>matches(w,t))).length;
+    const need=needs.filter(w=>NEED_RX[w]?.test(x.s)).length,num=(x.s.match(NUM)||[]).length?1:0;
+    return {s:x.s,i,head:x.head,num,score:hit*2+need*2+(needs.length?num:0)-(/https?:\/\/|\bdoi\b/i.test(x.s)?3:0),hit};});  // a reference line (URL, doi) only if nothing else
+  const pool=lines.filter(x=>x.s.length>=12&&x.hit>0),body=pool.filter(x=>!x.head),picked=[];
+  for(const x of (body.length?body:pool).sort((a,b)=>b.score-a.score||a.i-b.i)){if(picked.length>=n)break;if(!near(x.s,picked))picked.push(x);}
+  const short=()=>picked.reduce((k,x)=>k+x.s.length,0)<140;
+  if(slides&&picked.length&&picked.length<n&&short())for(const x of lines){if(picked.length>=n||!short())break;
+    if(!x.head&&!picked.includes(x)&&x.s.length>=8&&(x.num||/choix|intention|alternative/iu.test(x.s))&&!near(x.s,picked))picked.push(x);}
+  // At most about 300 characters in all, so that pages 2 and 3 stay on the first screen of a phone.
+  let room=300;return picked.sort((a,b)=>a.i-b.i).map(x=>cut(x.s,qt,slides?170:150)).filter((l,k)=>(room-=l.length)>=0||!k);
+}
+// One short piece of a page around its first query word (pages 2–5: one line each).
+function shortBit(text,qt,slides){const l=keyLines(text,qt,[],1,slides)[0];return l?cut(l.replace(/^… /,''),qt,90,12):'';}
+const needsIn=q=>NEEDS.map(x=>x[1]).filter(w=>hasWord(q,w));
 function textOfPage(doc,page){if(!texts||!pageRows)return '';return (pageRows.get(doc+':'+page)||[]).map(i=>texts[i]||'').join('\n');}
 
 // ---------- page images through the bridge (cached) ----------
@@ -87,9 +161,21 @@ const keep=e=>e.preventDefault(); // keep the keyboard open while choosing a sug
 // The question field grows with the text (up to 4 lines, then scrolls) so the whole question stays readable.
 function fitQ(){const q=$('q'),cs=getComputedStyle(q),max=4*parseFloat(cs.lineHeight)+parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);
   q.style.height='auto';q.style.height=Math.min(q.scrollHeight,max)+'px';q.style.overflowY=q.scrollHeight>max+1?'auto':'hidden';}
-function setQ(v){$('q').value=v;fitQ();$('clear').hidden=!v;}
+function setQ(v){$('q').value=v;fitQ();$('clear').hidden=!v;renderNeeds();}
+// Need buttons: pressed when their words are in the field. A tap adds or removes them; if the field then names a subject
+// (any other word), the search runs at once — e.g. « pyélonéphrite » then Durée = one tap to the result.
+function renderNeeds(){const v=$('q').value;
+  $('needs').replaceChildren(...NEEDS.map(([label,w])=>el('button',{type:'button',class:'need','aria-pressed':String(hasWord(v,w)),onpointerdown:keep,onmousedown:keep,onclick:()=>toggleNeed(w)},label)));}
+function removePhrase(v,w){const toks=v.split(/\s+/).filter(Boolean),target=words(w),n=target.length;
+  for(let i=0;i+n<=toks.length;i++)if(toks.slice(i,i+n).every((t,k)=>words(t).join(' ')===target[k])){toks.splice(i,n);break;}return toks.join(' ');}
+function subjectOf(v){let rest=v;for(const [,w] of NEEDS)rest=removePhrase(rest,w);return words(rest).filter(t=>!STOP.has(t)&&t.length>=3).length>0;}
+function toggleNeed(w){
+  const v=$('q').value.trim(),next=hasWord(v,w)?removePhrase(v,w):(v?v+' ':'')+w;
+  if(subjectOf(next)){setQ(next);submit();return;}
+  setQ(next?next+' ':'');$('q').focus();assist();
+}
 function assist(){
-  const input=$('q'),v=input.value;$('clear').hidden=!v;fitQ();
+  const input=$('q'),v=input.value;$('clear').hidden=!v;fitQ();renderNeeds();
   if(document.activeElement!==input){$('assist').hidden=true;return;}
   const list=$('suggest'),chips=$('chips');list.replaceChildren();chips.replaceChildren();
   const tokens=v.split(/\s+/).filter(Boolean),partial=/\s$/.test(v)?'':(tokens.at(-1)||''),np=norm(partial),prev=norm(/\s$/.test(v)?tokens.at(-1)||'':tokens.at(-2)||'');
@@ -97,14 +183,34 @@ function assist(){
   if(!v.trim()){
     for(const r of store.get(RECENT,[]).slice(0,5))list.append(el('li',{},el('button',pick(()=>{setQ(r.q);submit();}),icon('clock'),el('span',{},r.q))));
   }else{
-    const seen=new Set(),out=[];
+    const seen=new Set(),out=[],nv=norm(v),offered=[];  // offered: names already proposed, as plain words
+    // Names from the pack first (diseases, situations, anti-infectives, germs), with what they are; words that complete the
+    // two last typed words (« insuffisance re » → insuffisance rénale) before those starting with the word being typed.
+    if(np.length>=2&&lexicon.length){
+      const cands=[];
+      for(const [name,kind,n] of lexicon){const L=norm(name);if(L===np||nv.includes(L))continue;
+        const two=prev&&!STOP.has(prev)&&L.startsWith(prev+' '+np)?0:L.startsWith(np)?1:L.split(/[^\p{L}\p{N}]+/u).some(w=>w.startsWith(np))?2:-1;
+        if(two>=0)cands.push([two,n,name,kind]);}
+      cands.sort((a,b)=>a[0]-b[0]||b[1]-a[1]);if(cands[0]?.[0]===0)cands.splice(cands.findIndex(c=>c[0]>0)>>>0);  // « insuffisance re »: rénale, not « relais oral »
+      for(const [rank,,name,kind] of cands.slice(0,4)){seen.add(norm(name));offered.push(words(name).join(' '));
+        const base=rank===0?v.slice(0,v.length-partial.length).replace(/\S+\s*$/,''):v.slice(0,v.length-partial.length);
+        list.append(el('li',{},el('button',pick(()=>{input.value=base+name+' ';input.focus();assist();}),icon('search'),
+          el('span',{},rank===1?[el('b',{},name.slice(0,partial.length)),name.slice(partial.length)]:name),el('small',{class:'kind'},kind))));}
+    }
+    // Index words left out: a name already proposed in other words (« amoxicilline ac clav » after amoxicilline–acide clavulanique),
+    // a word group ending with a unit (« amoxicilline mg kg »: the Posologie button says it better), and a group that brings an
+    // anti-infective the doctor did not type (« amoxicilline gentamicine »): the app does not suggest a treatment to look up.
+    // kin: two index words that are the same thing cut differently (« amoxicilline ac clav », « amoxicilline acide clavulanique »).
+    const kin=(a,b)=>{const A=words(a),B=words(b);return A.slice(0,B.length).every((x,i)=>x.startsWith(B[i])||B[i].startsWith(x));};
+    const typed=words(v),antiW=antiWords(),dup=t=>{const w=words(t);return offered.some(o=>{const ow=o.split(' ');return w.every(x=>ow.some(y=>y.startsWith(x)));})
+      ||(w.length>1&&UNIT.has(w.at(-1)))||w.some(x=>antiW.has(x)&&!typed.some(y=>x.startsWith(y)));};
     if(np.length>=2&&termsNorm.length){
-      const add=i=>{const t=terms[i][0];if(!seen.has(t)&&norm(t)!==np&&out.length<5){seen.add(t);out.push(t);}};
+      const room=Math.max(0,(offered.length?4:5)-list.children.length);
+      const add=i=>{const t=terms[i][0];if(!seen.has(t)&&!seen.has(norm(t))&&norm(t)!==np&&!dup(t)&&!out.some(o=>kin(o,t))&&out.length<room){seen.add(t);out.push(t);}};
       if(prev&&!STOP.has(prev))for(let i=0;i<termsNorm.length&&out.length<2;i++)if(termsNorm[i].startsWith(prev+' '+np))add(i);
-      for(let i=0;i<termsNorm.length&&out.length<5;i++)if(termsNorm[i].startsWith(np))add(i);
+      for(let i=0;i<termsNorm.length&&out.length<room;i++)if(termsNorm[i].startsWith(np))add(i);
     }else if(!partial&&prev.length>=3&&!STOP.has(prev)&&termsNorm.length){  // after a space: the words that usually follow
-      const nv=norm(v);
-      for(let i=0;i<termsNorm.length&&out.length<4;i++)if(termsNorm[i].startsWith(prev+' ')&&!nv.includes(termsNorm[i].slice(prev.length+1)))out.push(terms[i][0]);
+      for(let i=0;i<termsNorm.length&&out.length<4;i++)if(termsNorm[i].startsWith(prev+' ')&&!nv.includes(termsNorm[i].slice(prev.length+1))&&!dup(terms[i][0])&&!out.some(o=>kin(o,terms[i][0])))out.push(terms[i][0]);
     }
     for(const t of out){
       const completesBigram=prev&&norm(t).startsWith(prev+' ');
@@ -154,7 +260,9 @@ function engineStatus(text,cls=''){const e=$('engine');e.hidden=!text;e.classNam
 // cannot run (the reason also under the search field). Touch it for the state in words.
 const dot={msg:'Préparation de la recherche'};
 function setDot(state,p,msg){const b=$('status');if(!b)return;b.className='status-dot '+state;b.style.setProperty('--p',Math.round(100*p));
-  dot.msg=msg||(state==='loading'?'Préparation de la recherche · '+Math.round(100*p)+' %':dot.msg);b.setAttribute('aria-label',dot.msg);b.title=dot.msg;}
+  dot.msg=msg||(state==='loading'?'Préparation de la recherche · '+Math.round(100*p)+' %':dot.msg);b.setAttribute('aria-label',dot.msg);b.title=dot.msg;
+  // The same state in two words, readable at a glance (urgence prototype).
+  const t=$('status-text');if(t){t.className='status-text '+state;t.textContent=state==='ready'?(engine.MODE==='sparka'?'Prêt · Sparka':'Prêt · hors ligne'):state==='error'?'Recherche indisponible':'Préparation… '+Math.round(100*p)+' %';}}
 function submit(){const q=$('q').value.trim();if(!q)return;$('q').blur();$('assist').hidden=true;
   if(!engine.state.ready){pendingQuery=q;$('queued').hidden=false;$('queued').textContent='« '+q+' » : recherche lancée dès que l’app est prête.';navigate({view:'home'});return;}
   search(q);}
@@ -176,8 +284,8 @@ async function search(q){
   if(err){$('rsum').textContent='Recherche interrompue : '+err.message;return {error:err.message};}
   results=r.pages;lexicalHits=r.lexicalHits;
   if(!results.length){$('rsum').textContent='Aucune page trouvée.';$('after').hidden=false;return null;}
-  const where=engine.MODE==='sparka'?'calcul sur Sparka':'hors ligne',secs=ms=>(ms/1000).toFixed(1).replace('.',',')+' s';
-  renderResults();$('rsum').textContent=results.length+' pages · '+where;
+  const where=(engine.MODE==='sparka'?'calcul sur Sparka':'hors ligne')+(DEV&&r.index?' · index '+r.index:''),secs=ms=>(ms/1000).toFixed(1).replace('.',',')+' s';
+  const tr=performance.now();renderResults();r.times.render_ms=performance.now()-tr;window.lastTimes=r.times;$('rsum').textContent=results.length+' pages · '+where;  // render_ms: cost of the key lines and shortcut (prototype)
   const mine=results,begin=performance.now(),shown=await previewBest();r.times.first_page_ms=r.times.retrieval_ms+performance.now()-begin;
   // Time from the question to the first page on screen (as in the Android app); the search alone if the page was not shown.
   if(results===mine)$('rsum').textContent=results.length+' pages · '+secs(shown?r.times.first_page_ms:r.times.retrieval_ms)+' · '+where;
@@ -206,29 +314,58 @@ function remember(q){if(benching)return;const r=store.get(RECENT,[]).filter(x=>x
 
 // ---------- results ----------
 function statusBadge(doc){const st=statusOf(doc);return st?el('span',{class:'badge '+st.level},st.label):null;}
+// Reference table shortcut: a need (posologie, durée, allergie, enfant) and a name typed in the search (anti-infective, disease,
+// germ) → the page of the matching SPILF table that names it most often. A text lookup shown apart, under the best page (unless it is
+// that page); the ranking is unchanged.
+const SHEET_FOR={'posologie':SHEETS[0][0],'durée':SHEETS[1][0],'allergie bêta-lactamines':SHEETS[2][0],'enfant':SHEETS[3][0]};
+function shortcut(q,top){
+  if(!texts||!pageRows||!lexicon.length)return null;
+  const names=lexicon.filter(([n,k])=>k!=='situation'&&hasWord(q,n)).map(x=>x[0]).sort((a,b)=>b.length-a.length);
+  for(const need of names.length?needsIn(q):[]){
+    const title=SHEET_FOR[need],d=title&&docs.find(x=>norm(x.title).startsWith(norm(title)));if(!d)continue;
+    for(const name of names){const target=' '+words(name).join(' ')+' ';let best=null;
+      for(let p=0;p<d.pages;p++){const t=' '+words(textOfPage(d.id,p)).join(' ')+' ';let n=0,k=-1;while((k=t.indexOf(target,k+1))>=0)n++;if(n&&(!best||n>best.n))best={p,n};}
+      if(best)return top.row.doc===d.id&&top.row.page===best.p?null:{doc:d.id,page:best.p,name};}}
+  return null;
+}
+// Best page: title, source, its key lines (query words marked, doses and durations in bold), then one button to the original page
+// with a small preview. Pages 2–3 one line each (title, page, one marked piece), then the reference-table page when there is one,
+// 4–5 folded: the eye stays on the first one, and the next two are seen without scrolling.
 function renderResults(){
-  const qt=queryTerms(query),[top,...rest]=results,d=docOf(top.row.doc);
-  const snip=bestSnippet(textOfPage(top.row.doc,top.row.page),qt,320);
+  const qt=queryTerms(query),needs=needsIn(query),[top,...rest]=results,d=docOf(top.row.doc);
+  const text=textOfPage(top.row.doc,top.row.page),slides=isSlides(top.row.doc),lines=keyLines(text,qt,needs,slides?3:2,slides),snip=!lines.length&&text?bestSnippet(text,qt,240):'';
   $('best').replaceChildren(...[
-    el('div',{class:'kicker'},'Meilleure correspondance'),
-    el('button',{type:'button',class:'best-head',onclick:()=>openHit(0)},el('strong',{},d.title),el('span',{class:'meta'},metaLine(top.row.doc,top.row.page,true,true))),
+    el('div',{class:'kicker'},'Meilleur résultat'),
+    el('button',{type:'button',class:'best-head',onclick:()=>openHit(0)},el('strong',{},d.title),el('span',{class:'meta'},withYear(d,[d.kind,d.source]))),
     statusBadge(top.row.doc),
-    snip?el('p',{class:'snip'},highlighted(snip,qt)):null,
-    el('button',{type:'button',class:'thumb loading',id:'best-thumb','aria-label':'Ouvrir la page en grand',onclick:()=>openHit(0)},el('img',{alt:'Page originale — '+d.title+', '+pageLabel(top.row.doc,top.row.page)}),el('span',{class:'expand'},'Toucher pour agrandir'))].filter(Boolean));
+    lines.length?el('ul',{class:'keylines'},...lines.map(l=>el('li',{},rich(l,qt)))):snip?el('p',{class:'snip'},rich(snip,qt)):!texts?el('p',{class:'snip muted'},'Texte de la page en cours de chargement…'):null,
+    el('button',{type:'button',class:'open-page',id:'best-thumb',onclick:()=>openHit(0)},
+      el('span',{class:'mini loading'+(slides?' wide':'')},el('img',{alt:''})),
+      el('span',{class:'open-label'},el('strong',{},'Voir la '+(slides?'diapo ':'page ')+(top.row.page+1))),icon('chev'))].filter(Boolean));
   $('best').hidden=false;
-  $('others').replaceChildren(...rest.map((p,k)=>{const i=k+1,dd=docOf(p.row.doc),s=bestSnippet(textOfPage(p.row.doc,p.row.page),qt,160);
-    return el('button',{type:'button',class:'row',onclick:()=>openHit(i)},
+  const ref=shortcut(query,top);$('ref').hidden=!ref;
+  if(ref){const dd=docOf(ref.doc),qr=[...new Set([...qt,...queryTerms(ref.name)])],bit=shortBit(textOfPage(ref.doc,ref.page),queryTerms(ref.name),isSlides(ref.doc));
+    $('ref-row').replaceChildren(el('button',{type:'button',class:'row one',onclick:()=>openPage(ref.doc,ref.page,null)},icon('doc'),
+      el('span',{class:'body'},el('strong',{},dd.title),el('span',{class:'meta'},el('span',{class:'pg'},pageLabel(ref.doc,ref.page)),bit?[' · ',el('span',{class:'bit'},rich(bit,qr))]:'')),icon('chev')));}
+  // Title on the first line; on the second the page and the piece of text with the query words (a warning sign if the document is flagged).
+  const row=(p,i)=>{const dd=docOf(p.row.doc),bit=shortBit(textOfPage(p.row.doc,p.row.page),qt,isSlides(p.row.doc)),st=statusOf(p.row.doc);
+    return el('button',{type:'button',class:'row one',onclick:()=>openHit(i)},
       el('span',{class:'n'},String(i+1)),
-      el('span',{class:'body'},el('strong',{},dd.title),el('span',{class:'meta'},metaLine(p.row.doc,p.row.page,false)),s?el('span',{class:'snip'},highlighted(s,qt)):null,statusBadge(p.row.doc)),
-      icon('chev'));}));
+      el('span',{class:'body'},el('strong',{},dd.title),el('span',{class:'meta'},st?.level==='warn'?el('span',{class:'warn-s',title:st.label},'⚠ '):'',el('span',{class:'pg'},pageLabel(p.row.doc,p.row.page)),bit?[' · ',el('span',{class:'bit'},rich(bit,qt))]:'')),
+      icon('chev'));};
+  $('others').replaceChildren(...rest.slice(0,2).map((p,k)=>row(p,k+1)));
+  const more=rest.slice(2);$('more').hidden=!more.length;$('more').open=false;
+  $('more').querySelector('summary').textContent=more.length+(more.length>1?' autres pages':' autre page');$('more-rows').replaceChildren(...more.map((p,k)=>row(p,k+3)));
   $('others-title').hidden=!rest.length;$('after').hidden=false;
   renderSpelling();
 }
+// The small preview uses the quick 400 px render; the full one (for the reader) follows in the background.
 async function previewBest(){
-  const p=results[0],thumb=$('best-thumb');if(!thumb)return false;
-  try{const {url}=await pageURL(p.row.doc,p.row.page,'std',()=>results[0]===p);const img=thumb.querySelector('img');
-    await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url;});thumb.classList.remove('loading');return true;}
-  catch{thumb.classList.remove('loading');thumb.querySelector('.expand').textContent='Aperçu indisponible — toucher pour ouvrir';return false;}
+  const p=results[0],box=$('best-thumb')?.querySelector('.mini');if(!box)return false;
+  try{const {url}=await pageURL(p.row.doc,p.row.page,'lo',()=>results[0]===p);const img=box.querySelector('img');
+    await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url;});box.classList.remove('loading');
+    pageURL(p.row.doc,p.row.page,'std',()=>results[0]===p).catch(()=>{});return true;}
+  catch{box.classList.remove('loading');box.classList.add('none');return false;}
 }
 
 // ---------- reader ----------
@@ -481,7 +618,10 @@ const fmtDate=(iso,month='long')=>new Date(iso).toLocaleDateString('fr-FR',{day:
 let dataDate=null;
 function renderFreshness(){const t=dataDate?'Données du '+fmtDate(dataDate):'';for(const n of document.querySelectorAll('.fresh-line'))n.textContent=t;}
 function renderHome(){
-  const r=store.get(RECENT,[]);$('recent-block').hidden=!r.length;$('first-block').hidden=r.length>0;
+  const r=store.get(RECENT,[]);$('recent-block').hidden=!r.length;
+  $('subjects').replaceChildren(...SUBJECTS.map(([label,w])=>el('button',{type:'button',class:'tile',onclick:()=>{setQ(w+' ');$('q').focus();assist();}},label)));
+  const sheets=SHEETS.map(([t,label])=>[docs.find(d=>norm(d.title).startsWith(norm(t))),label]).filter(x=>x[0]);$('sheets-block').hidden=!sheets.length;
+  $('sheets').replaceChildren(...sheets.map(([d,label])=>el('button',{type:'button',class:'sheet-b',title:d.title,onclick:()=>openPage(d.id,0,null)},icon('doc'),el('span',{},label,d.year?el('small',{},String(d.year)):null))));
   $('recent').replaceChildren(...r.slice(0,4).map(x=>el('button',{type:'button',class:'pill',onclick:()=>{setQ(x.q);submit();}},x.q)));
 }
 
@@ -575,12 +715,12 @@ window.a2medBack=()=>{
 
 // ---------- settings ----------
 // Light theme only (Arthur, 2026-10-21): no appearance choice; only the text size is a setting.
-function applyTheme(){document.documentElement.style.setProperty('--scale',store.get('a2med-textsize','1'));}
+function applyTheme(){document.documentElement.style.setProperty('--scale',store.get(NS+'-textsize','1'));}
 function initSettings(){
   // The three sizes side by side, the current one outlined.
   const sizes=[...$('textsize').querySelectorAll('button')];
-  const showSize=()=>{const v=store.get('a2med-textsize','1');for(const b of sizes)b.setAttribute('aria-checked',String(b.dataset.v===v));};
-  for(const b of sizes)b.onclick=()=>{store.set('a2med-textsize',b.dataset.v);applyTheme();showSize();};showSize();
+  const showSize=()=>{const v=store.get(NS+'-textsize','1');for(const b of sizes)b.setAttribute('aria-checked',String(b.dataset.v===v));};
+  for(const b of sizes)b.onclick=()=>{store.set(NS+'-textsize',b.dataset.v);applyTheme();showSize();};showSize();
   $('engine-mode').closest('label').hidden=!DEV;$('engine-mode').value=engine.MODE;$('engine-mode').onchange=e=>{engine.setMode(e.target.value);location.reload();};  // the model is loaded (or not) at start
   $('forget').onclick=()=>{if(!confirm('Effacer l’historique des recherches et toutes les pages enregistrées ?'))return;store.set(RECENT,[]);store.set(SAVED,[]);renderHome();if(history.state?.view==='docs')renderDocs();toast('Historique et pages enregistrées effacés');};
 }
@@ -623,7 +763,7 @@ applyTheme();wire();history.replaceState({view:'home'},'');apply({view:'home'});
 if(window.a2medDevBridge){const b=el('div',{class:'dev'},'Aperçu Mac · moteur 0.4 (Gemma 1 Q4 512D + BM25)');document.body.append(b);setTimeout(()=>b.style.opacity='0',4000);}
 window.runSearch=search;
 // Progress: the steps engine.js can measure, and in between an estimate from how long the last start took on this device.
-const STARTUP='a2med-startup-ms',started=performance.now(),expected=Math.max(1500,+store.get(STARTUP,4000)||4000);
+const STARTUP=NS+'-startup-ms',started=performance.now(),expected=Math.max(1500,+store.get(STARTUP,4000)||4000);
 let measured=0,measuredAt=started,shown=0;
 // After each measured step the ring keeps creeping toward 95 % (the last step, preparing the model, reports nothing), never back.
 const tick=()=>{const now=performance.now();shown=Math.max(shown,.9*Math.min(1,(now-started)/expected),
@@ -632,8 +772,8 @@ $('status').onclick=()=>toast(dot.msg);
 const ticker=setInterval(tick,120);
 try{
   // pack-info.json: SPILF check date and the pack's new/updated documents (generated on Sparka into pack/ui/).
-  [docs,terms,info]=await Promise.all([fetch(DATA+'docs.json').then(r=>r.ok?r.json():[]).catch(()=>[]),fetch(DATA+'terms.json').then(r=>r.ok?r.json():[]).catch(()=>[]),
-    fetch(DATA+'pack-info.json').then(r=>r.ok?r.json():null).catch(()=>null)]);
+  [docs,terms,info,lexicon]=await Promise.all([fetch(DATA+'docs.json').then(r=>r.ok?r.json():[]).catch(()=>[]),fetch(DATA+'terms.json').then(r=>r.ok?r.json():[]).catch(()=>[]),
+    fetch(DATA+'pack-info.json').then(r=>r.ok?r.json():null).catch(()=>null),fetch(BASE+'lexicon.json').then(r=>r.ok?r.json():[]).catch(()=>[])]);
   dataDate=(await localManifest().catch(()=>null))?.date||info?.pack_date||null;
   renderFreshness();if(history.state?.view==='docs')renderDocs();
   termsNorm=terms.map(t=>norm(t[0]));vocabSet=new Set(termsNorm.flatMap(t=>t.split(/[^\p{L}]+/u)).filter(Boolean));vocab=terms.filter(t=>!t[0].includes(' ')&&t[0].length>=4).map(t=>[t[0],norm(t[0]),t[1]]);

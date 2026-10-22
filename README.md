@@ -10,6 +10,8 @@ le médecin lit le document original.
   PDF (environ 420 Mo, Wi-Fi conseillé), puis tout reste sur le téléphone. Les mises à jour ne téléchargent que les fichiers
   modifiés (vérifiés par SHA-256).
 - Recherche : EmbeddingGemma 300M (Q4, 512 dimensions) exécuté dans le navigateur + BM25, fusion RRF, résultats par page.
+  Depuis la 0.7, l'index TC_i8 : chaque passage est encodé avec le titre de son document, la fin des passages longs a ses
+  propres vecteurs, vecteurs en int8.
 - iPhone : ouvrir dans Safari puis « Partager → Sur l'écran d'accueil », et lancer l'app depuis l'icône.
 - Prototype de recherche, pas un dispositif médical : vérifiez toujours la page affichée.
 
@@ -21,7 +23,8 @@ le médecin lit le document original.
 - Documents : recommandations SPILF et sociétés associées, librement redistribuables.
 
 ## Mettre à jour (sur le Mac, dossier `AA-Med`)
-1. Nouveau pack prêt dans `mobile_final_004/pack-NNN/` : `python3 webapp_proto_001/announce_pack.py pack-NNN`
-2. Après une modification de l'app : `python3 webapp_proto_001/stamp_shell.py`
-3. `python3 webapp_proto_001/build_github.py` (reconstruit `site/`), puis commit et push.
+Depuis la 0.7, l'app vient de `webapp_rc_0.7/`.
+1. Nouveau pack prêt dans `mobile_final_004/pack-NNN/` : `python3 webapp_rc_0.7/announce_pack.py pack-NNN`
+2. Après une modification de l'app : `python3 webapp_rc_0.7/stamp_shell.py`
+3. `python3 webapp_rc_0.7/build_github.py github_a2med` (reconstruit `site/`), puis commit et push.
 Les téléphones voient la mise à jour au retour dans l'app (ou Réglages → Données et mises à jour → Vérifier maintenant).

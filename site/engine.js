@@ -2,18 +2,26 @@
 // The interface only calls load() and search(). Ranking = 0.3 reference, unchanged: BM25 (original question) + dense,
 // RRF 1/(61+r) over the top 50, passages grouped by page. Fusion weights were not tuned on the comparison results.
 // Query path = the Pixel smoke of 2026-10-20 (Transformers.js 4.3.1, ORT Web WASM CPU, one thread, main thread).
-import {BASE,DEV} from './config.js';
+import {BASE,DEV,NS} from './config.js';
 import {VERSION as RANKING,lexicalScores,order,fuse,pageResults} from './retrieval.mjs';
 import {fixedTokens} from './tokenize.mjs';
+import {denseScoresTC} from './dense_tc.mjs';
 
 export const MODEL={id:'embeddinggemma-300m-q4',label:'Gemma 1 Q4 512D',full:768,dims:512,dtype:'q4',
   queryPrefix:'task: search result | query: ',vectors:BASE+'pack/vectors-gemma-q4-512.bin'};
 const FINGERPRINT='45e2c39e21ac7764151a9d98b67ca6aa6302cc2282acd0b9dacb44b38fb01e67';
+// Dense index (« urgence » prototype, 22/10): TC_i8 from model_lab_20261022 by default — one int8 vector per row plus vectors for the
+// end of long rows, a row's score = the max over its vectors × their scale (dense_tc.mjs). Same model, same query vector, same
+// BM25 / RRF / pages. ?index=app keeps the 0.6 index (one float32 vector per row) to compare. If the TC_i8 files are not
+// downloaded yet (data update), the 0.6 index is used and state.index says so.
+export const INDEX=(()=>{try{return new URLSearchParams(location.search).get('index')==='app'?'app':'tc';}catch{return 'tc';}})();
+const TC_FILES=['vectors-tc-i8.bin','vectors-tc-scale.bin','vectors-tc-rows.bin'].map(f=>BASE+'pack/'+f);
+let tc=null;
 
 let Tensor;  // Transformers.js is loaded only when the model runs here (not in the 'sparka' mode, nor in the online version)
 
 let corpus,bm,vectors,tokenizer,model;
-export const state={ready:false,corpus:null,bm:null,startup:null};
+export const state={ready:false,corpus:null,bm:null,startup:null,index:null};
 // Where the question is turned into a vector and ranked: 'device' (default, offline) or 'sparka' (the same files and code run by
 // sparka-search-001/server.mjs, reached through /api/; same top 5 on the 172 benchmark questions). Chosen in Réglages, or with
 // ?moteur=sparka|appareil (kept). In 'sparka' mode the model is not loaded on the phone. Local server only (DEV).
@@ -29,11 +37,11 @@ export async function load(status=()=>{},progress=()=>{}){
   [corpus,bm,vectors]=await Promise.all([
     fetch(BASE+'pack/corpus-meta.json').then(r=>{if(!r.ok)throw Error('Corpus non installé');return r.json();}),
     fetch(BASE+'pack/bm25.json').then(r=>r.json()),
-    MODE==='sparka'?null:fetch(MODEL.vectors).then(r=>{if(!r.ok)throw Error('Index Gemma non installé');return r.arrayBuffer();}).then(b=>new Float32Array(b))]);
+    MODE==='sparka'?null:loadVectors()]);
   if(corpus.fingerprint!==FINGERPRINT)throw Error('Corpus différent de celui de l’index');progress(.15);
   state.corpus=corpus;state.bm=bm;
   if(MODE==='sparka'){state.startup={model_ms:0,total_ms:performance.now()-t0,mode:MODE};state.ready=true;return corpus;}
-  if(vectors.length!==corpus.n*MODEL.dims)throw Error('Index vectoriel incomplet');
+  if(tc?tc.scale.length!==corpus.n+tc.rows.length||tc.i8.length!==tc.scale.length*MODEL.dims:vectors.length!==corpus.n*MODEL.dims)throw Error('Index vectoriel incomplet');
   status('Préparation de la recherche…');const t1=performance.now();
   const T=await import('./lib/transformers.web.min.js'),{AutoModel,AutoTokenizer,AutoConfig,env}=T;Tensor=T.Tensor;
   env.allowRemoteModels=false;env.allowLocalModels=true;env.useBrowserCache=false;env.localModelPath=new URL('pack/models/',BASE).pathname;  // a path: Transformers.js joins it like a file path (a full URL loses its //)
@@ -42,7 +50,7 @@ export async function load(status=()=>{},progress=()=>{}){
   const PACK=BASE+'pack/';
   env.fetch=async(u,o)=>{const url=new URL(String(u),location.href);url.search='';
     if(!url.href.startsWith(PACK))return fetch(u,o);
-    return (await (await caches.open('a2med-data')).match(url.href))||new Response('Données non installées',{status:404});};
+    return (await (await caches.open(NS+'-data')).match(url.href))||new Response('Données non installées',{status:404});};
   env.backends.onnx.wasm.wasmPaths=BASE+'lib/';env.backends.onnx.wasm.numThreads=1;env.backends.onnx.wasm.proxy=false;
   tokenizer=await AutoTokenizer.from_pretrained(MODEL.id,{local_files_only:true});progress(.25);
   const config=await AutoConfig.from_pretrained(MODEL.id,{local_files_only:true});config.vision_config=config.audio_config=null;
@@ -63,7 +71,16 @@ export async function encode(text){
   const n=Math.hypot(...v);if(!Number.isFinite(n)||n<1e-8)throw Error('Invalid norm');
   return truncate(Float32Array.from(v,x=>x/n),MODEL.dims);
 }
+async function loadVectors(){
+  if(INDEX==='tc'){const r=await Promise.all(TC_FILES.map(u=>fetch(u)));
+    if(r.every(x=>x.ok)){const [a,b,c]=await Promise.all(r.map(x=>x.arrayBuffer()));
+      tc={i8:new Int8Array(a),scale:new Float32Array(b),rows:new Int32Array(c)};state.index='TC_i8';return null;}
+    state.index='0.6 (TC_i8 non installé)';}
+  else state.index='0.6';
+  const r=await fetch(MODEL.vectors);if(!r.ok)throw Error('Index Gemma non installé');return new Float32Array(await r.arrayBuffer());
+}
 function denseOrder(q,dims){
+  if(tc)return order(denseScoresTC(q,tc.i8,tc.scale,tc.rows,corpus.n,dims),corpus);
   const scores=new Float32Array(corpus.n);
   for(let i=0;i<corpus.n;i++){let v=0;const o=i*dims;for(let j=0;j<dims;j++)v+=q[j]*vectors[o+j];scores[i]=v;}
   return order(scores,corpus);
@@ -76,7 +93,7 @@ export async function search(q,limit=5){
   t=performance.now();const emb=await encode(q);times.encode_ms=performance.now()-t;
   t=performance.now();const dense=denseOrder(emb,MODEL.dims);times.dense_ms=performance.now()-t;
   const pages=pageResults(fuse([[dense],[lexical]]),corpus,limit);times.retrieval_ms=performance.now()-begin;
-  return {pages,times,lexicalHits:lexical.length,ranking:RANKING,model:MODEL.label};
+  return {pages,times,lexicalHits:lexical.length,ranking:RANKING,model:MODEL.label,index:state.index};
 }
 
 // Same answer from Sparka: the pages refer to rows of the same corpus (fingerprint checked), taken from the local copy.

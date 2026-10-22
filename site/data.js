@@ -4,9 +4,9 @@
 // First install: files go straight to 'a2med-data' (no double storage); the app starts once the manifest is written last.
 // Update: only files whose sha256 changed are fetched into 'a2med-staging', checked, then switched in together, so until the
 // last check passes the app keeps using the previous set. An interrupted download resumes where it stopped.
-import {BASE} from './config.js';
+import {BASE,NS} from './config.js';
 export const MANIFEST_URL=BASE+'data/manifest.json';const PACK=BASE+'pack/';
-const DATA='a2med-data',STAGE='a2med-staging',LOCAL=PACK+'.manifest.json';
+const DATA=NS+'-data',STAGE=NS+'-staging',LOCAL=PACK+'.manifest.json';
 const TYPES={json:'application/json',pdf:'application/pdf',txt:'text/plain'};
 const type=path=>TYPES[path.split('.').pop()]||'application/octet-stream';
 const hex=buf=>[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
