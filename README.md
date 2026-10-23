@@ -12,6 +12,10 @@ le médecin lit le document original.
 - Recherche : EmbeddingGemma 300M (Q4, 512 dimensions) exécuté dans le navigateur + BM25, fusion RRF, résultats par page.
   Depuis la 0.7, l'index TC_i8 : chaque passage est encodé avec le titre de son document, la fin des passages longs a ses
   propres vecteurs, vecteurs en int8.
+- Depuis la 0.8 :
+  - toucher Allergie, Posologie, Grossesse… ouvre un petit panneau de précisions (choix fréquents, ou texte libre) ;
+  - la recherche part avec la flèche ;
+  - le modèle tourne dans un fil à part, si bien que l'écran ne se fige plus au démarrage ni pendant une recherche.
 - iPhone : ouvrir dans Safari puis « Partager → Sur l'écran d'accueil », et lancer l'app depuis l'icône.
 - Prototype de recherche, pas un dispositif médical : vérifiez toujours la page affichée.
 
@@ -23,8 +27,8 @@ le médecin lit le document original.
 - Documents : recommandations SPILF et sociétés associées, librement redistribuables.
 
 ## Mettre à jour (sur le Mac, dossier `AA-Med`)
-Depuis la 0.7, l'app vient de `webapp_rc_0.7/`.
-1. Nouveau pack prêt dans `mobile_final_004/pack-NNN/` : `python3 webapp_rc_0.7/announce_pack.py pack-NNN`
-2. Après une modification de l'app : `python3 webapp_rc_0.7/stamp_shell.py`
-3. `python3 webapp_rc_0.7/build_github.py github_a2med` (reconstruit `site/`), puis commit et push.
+Depuis la 0.8, l'app vient de `webapp_proto_003_precisions/` (la 0.7 venait de `webapp_rc_0.7/`).
+1. Nouveau pack prêt dans `mobile_final_004/pack-NNN/` : `python3 webapp_proto_003_precisions/announce_pack.py pack-NNN`
+2. Après une modification de l'app : `python3 webapp_proto_003_precisions/stamp_shell.py`
+3. `python3 webapp_proto_003_precisions/build_github.py github_a2med` (reconstruit `site/`), puis commit et push.
 Les téléphones voient la mise à jour au retour dans l'app (ou Réglages → Données et mises à jour → Vérifier maintenant).

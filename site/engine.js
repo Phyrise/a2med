@@ -1,7 +1,7 @@
 // Search engine behind the final UI, 0.4: Gemma 1 Q4 (embeddinggemma-300m, model_q4) at 512 dimensions + BM25.
 // The interface only calls load() and search(). Ranking = 0.3 reference, unchanged: BM25 (original question) + dense,
 // RRF 1/(61+r) over the top 50, passages grouped by page. Fusion weights were not tuned on the comparison results.
-// Query path = the Pixel smoke of 2026-10-20 (Transformers.js 4.3.1, ORT Web WASM CPU, one thread, main thread).
+// Query path = the Pixel smoke of 2026-10-20 (Transformers.js 4.3.1, ORT Web WASM CPU, one thread), in a worker since 23/10.
 import {BASE,DEV,NS} from './config.js';
 import {VERSION as RANKING,lexicalScores,order,fuse,pageResults} from './retrieval.mjs';
 import {fixedTokens} from './tokenize.mjs';
@@ -34,6 +34,9 @@ export function setMode(m){try{localStorage.setItem(KEY,m);}catch{}}
 export async function load(status=()=>{},progress=()=>{}){
   const t0=performance.now();
   status('Chargement des documents…');
+  // The worker loads the model while this page reads the documents (both took turns on one thread before).
+  let modelMs=0;const inWorker=MODE!=='sparka'&&ENCODER==='worker'?loadWorker(progress).then(()=>{modelMs=performance.now()-t0;},
+    e=>{worker?.terminate();worker=null;state.worker_error=String(e?.message||e);}):null;
   [corpus,bm,vectors]=await Promise.all([
     fetch(BASE+'pack/corpus-meta.json').then(r=>{if(!r.ok)throw Error('Corpus non installé');return r.json();}),
     fetch(BASE+'pack/bm25.json').then(r=>r.json()),
@@ -43,6 +46,27 @@ export async function load(status=()=>{},progress=()=>{}){
   if(MODE==='sparka'){state.startup={model_ms:0,total_ms:performance.now()-t0,mode:MODE};state.ready=true;return corpus;}
   if(tc?tc.scale.length!==corpus.n+tc.rows.length||tc.i8.length!==tc.scale.length*MODEL.dims:vectors.length!==corpus.n*MODEL.dims)throw Error('Index vectoriel incomplet');
   status('Préparation de la recherche…');const t1=performance.now();
+  await inWorker;
+  if(!worker){await loadHere(progress);modelMs=performance.now()-t1;}
+  state.startup={model_ms:modelMs,total_ms:performance.now()-t0,encoder:worker?'worker':'page'};state.ready=true;
+  return corpus;
+}
+
+// The model runs in a worker (engine-worker.js, prototype « précisions » 23/10) so that loading it and encoding a question no longer
+// freeze the screen; ?encodeur=page keeps the 0.7 path (model on the page's thread) to compare. If the worker cannot start, the page
+// runs the model as before (state.worker_error says why).
+const ENCODER=(()=>{try{return new URLSearchParams(location.search).get('encodeur')==='page'?'page':'worker';}catch{return 'worker';}})();
+let worker=null,seq=0;const waiting=new Map();
+function call(m,onProgress){return new Promise((res,rej)=>{const id=++seq;waiting.set(id,{res,rej,onProgress});worker.postMessage({...m,id});});}
+async function loadWorker(progress){
+  worker=new Worker(new URL('./engine-worker.js',import.meta.url),{type:'module'});
+  worker.onmessage=({data:d})=>{const w=waiting.get(d.id);if(!w)return;if('progress' in d){w.onProgress?.(d.progress);return;}
+    waiting.delete(d.id);d.error?w.rej(Error(d.error)):w.res(d);};
+  worker.onerror=e=>{e.preventDefault?.();for(const w of waiting.values())w.rej(Error(e.message||'Erreur du fil de calcul'));waiting.clear();};
+  await call({type:'load',model:{id:MODEL.id,dtype:MODEL.dtype},pack:BASE+'pack/',models:new URL('pack/models/',BASE).pathname,lib:BASE+'lib/',cache:NS+'-data'},progress);
+  progress(1);
+}
+async function loadHere(progress){
   const T=await import('./lib/transformers.web.min.js'),{AutoModel,AutoTokenizer,AutoConfig,env}=T;Tensor=T.Tensor;
   env.allowRemoteModels=false;env.allowLocalModels=true;env.useBrowserCache=false;env.localModelPath=new URL('pack/models/',BASE).pathname;  // a path: Transformers.js joins it like a file path (a full URL loses its //)
   // Model files are read straight from the downloaded data, not through the service worker: Transformers.js fetches the weights
@@ -56,8 +80,6 @@ export async function load(status=()=>{},progress=()=>{}){
   const config=await AutoConfig.from_pretrained(MODEL.id,{local_files_only:true});config.vision_config=config.audio_config=null;
   const weights=x=>{if(x?.status==='progress'&&/\.onnx(_data)?$/.test(x.file||'')&&Number.isFinite(x.progress))progress(.25+.45*x.progress/100);};
   model=await AutoModel.from_pretrained(MODEL.id,{config,device:'wasm',dtype:MODEL.dtype,local_files_only:true,progress_callback:weights});progress(1);
-  state.startup={model_ms:performance.now()-t1,total_ms:performance.now()-t0};state.ready=true;
-  return corpus;
 }
 
 // Matryoshka: first `dims` components of the unit 768D query, L2 renormalised (same as the 512D corpus rows).
@@ -66,7 +88,7 @@ export function truncate(v,dims){
   const out=new Float32Array(dims);for(let j=0;j<dims;j++)out[j]=v[j]/n;return out;
 }
 export async function encode(text){
-  const tokens=await fixedTokens(tokenizer,MODEL.queryPrefix+text,Tensor),out=await model(tokens),v=out.sentence_embedding.data;
+  const v=worker?(await call({type:'encode',prefix:MODEL.queryPrefix,text})).v:(await model(await fixedTokens(tokenizer,MODEL.queryPrefix+text,Tensor))).sentence_embedding.data;
   if(v.length!==MODEL.full)throw Error('Sortie du modèle inattendue');
   const n=Math.hypot(...v);if(!Number.isFinite(n)||n<1e-8)throw Error('Invalid norm');
   return truncate(Float32Array.from(v,x=>x/n),MODEL.dims);

@@ -11,7 +11,7 @@ import * as engine from './engine.js';
 import {BASE,DEV,NS} from './config.js';
 import {localManifest} from './data.js';
 
-const VERSION='0.7';
+const VERSION='0.8';
 const DATA=BASE+'pack/ui/';
 
 // ---------- small helpers ----------
@@ -29,13 +29,34 @@ const icon=name=>{const s=document.createElementNS('http://www.w3.org/2000/svg',
 // Abbreviations are offered, never applied silently. List to validate with Alexia (same as 0.3).
 const ABBR={ei:'endocardite infectieuse',pna:'pyélonéphrite aiguë',pac:'pneumonie aiguë communautaire',iu:'infection urinaire',ium:'infection urinaire masculine',ioa:'infection ostéo-articulaire',idv:'infection disco-vertébrale',pth:'prothèse totale de hanche',ptg:'prothèse totale de genou',sarm:'Staphylococcus aureus résistant à la méticilline',sams:'Staphylococcus aureus sensible à la méticilline',blse:'bêta-lactamase à spectre étendu',epc:'entérobactérie productrice de carbapénémase',bhre:'bactérie hautement résistante émergente',icd:'infection à Clostridioides difficile',iim:'infection invasive à méningocoque',dhbnn:'dermohypodermite bactérienne non nécrosante',atb:'antibiothérapie',abp:'antibioprophylaxie',vzv:'varicelle zona',ist:'infection sexuellement transmissible',igh:'infection génitale haute',lcr:'liquide cérébrospinal',tb:'tuberculose',dfg:'débit de filtration glomérulaire'};
 
-// Urgence prototype (to validate with Arthur): what the doctor needs, one tap each — the words are added to the search.
-const NEEDS=[['Posologie','posologie'],['Durée','durée'],['1re intention','première intention'],['Allergie','allergie bêta-lactamines'],['Grossesse','grossesse'],
+// What the doctor needs, one tap each. Durée and 1re intention add their words to the search; the others first open a small panel
+// of precisions under the buttons (« précisions » prototype, 23/10, to show Arthur).
+const NEEDS=[['Posologie','posologie'],['Durée','durée'],['1re intention','première intention'],['Allergie','allergie'],['Grossesse','grossesse'],
   ['Enfant','enfant'],['Insuffisance rénale','insuffisance rénale'],['Alternative','alternative'],['Prophylaxie','prophylaxie']];
 // Lines of a page that answer a need (used to choose the key lines shown under the best page, never to rank pages).
 const NEED_RX={'posologie':/\d\s?(mg|g|µg|UI)\b|mg\/kg|posologi|\bdoses?\b/iu,'durée':/\d\s?(j|jours?|semaines?|mois|h)\b|durée/iu,
-  'première intention':/premi[eè]re intention|1(re|ère) intention/iu,'allergie bêta-lactamines':/allergi|b[eê]ta-?lactam|p[ée]nicilline/iu,'grossesse':/grossesse|enceinte/iu,
+  'première intention':/premi[eè]re intention|1(re|ère) intention/iu,'allergie':/allergi|b[eê]ta-?lactam|p[ée]nicilline/iu,'grossesse':/grossesse|enceinte/iu,
   'enfant':/enfant|p[ée]diatr|nourrisson|mg\/kg/iu,'insuffisance rénale':/r[ée]nal|clairance|DFG|ml\/min/iu,'alternative':/alternative|allergi|en cas d/iu,'prophylaxie':/prophyla/iu};
+// Precisions of a need: the question asked, then [label, words put in the search, situations where it is offered]. Chosen from
+// how often the words appear in the pack's pages (e.g. « allergie » near pénicilline 116 passages, bêta-lactamines 97,
+// céphalosporines 36, macrolides 6): rarer ones are typed in « Autre ». Then checked on the 12 home situations (eval/PREC-EVAL.json,
+// PREC-VARIANTS.json): « posologie pédiatrique » rather than « enfant mg/kg » (the amoxicillin dilution sheets came first), renal
+// severity rather than clearance numbers (pulled other documents), no trimester (no page names a trimester and one of these
+// situations). An option with a pattern is offered only when the situation typed matches it (no « Soins dentaires » for a cystitis).
+// Every set of words keeps the need's word or names the need on its own (nourrisson, allaitement, hémodialyse…).
+const PRECISE={
+  'posologie':{ask:'Posologie pour qui ?',opts:[['Adulte','posologie adulte'],['Enfant','posologie pédiatrique'],['Insuffisance rénale','posologie insuffisance rénale'],['Forme grave','posologie forme grave']],other:'Autre précision…'},
+  'allergie':{ask:'Allergie à quoi ?',opts:[['Pénicilline','allergie pénicilline'],['Bêta-lactamines','allergie bêta-lactamines'],['Céphalosporines','allergie céphalosporines'],['Anaphylaxie','allergie grave anaphylaxie']],other:'Autre allergie…'},
+  'grossesse':{ask:'Grossesse ou allaitement ?',plain:'Grossesse',opts:[['Allaitement','allaitement']],other:'Terme ou autre précision…'},
+  'enfant':{ask:'Quel âge ?',plain:'Enfant',opts:[['Nouveau-né','nouveau-né'],['Nourrisson','nourrisson'],['Adolescent','adolescent']],other:'Âge ou poids…'},
+  'insuffisance rénale':{ask:'Quelle atteinte rénale ?',opts:[['Modérée (clairance 30–60)','insuffisance rénale modérée'],['Sévère (clairance < 30)','insuffisance rénale sévère'],['Hémodialyse','hémodialyse']],other:'Autre précision…'},
+  'alternative':{ask:'Alternative en cas de… ?',opts:[['Allergie','alternative allergie'],['Échec','alternative échec'],['Contre-indication','alternative contre-indication'],['Relais oral','relais per os']],other:'Autre raison…'},
+  'prophylaxie':{ask:'Quelle prophylaxie ?',opts:[['Sujet contact','prophylaxie sujet contact',/meningo|coqueluch|tubercul|diphter|grippe|varicel|rougeol|scarlat|contact/],['Chirurgie','antibioprophylaxie chirurgie'],
+    ['Post-exposition','prophylaxie post-exposition',/vih|hepatite|rage|tetanos|exposition|morsure|varicel|rougeol|meningo|charbon|leptospir/],['Soins dentaires','antibioprophylaxie soins dentaires',/endocard|valv|prothes|cardi|dent/],
+    ['Voyage','prophylaxie voyageur',/palud|voyag|typho|cholera|dengue|fievre jaune|diarrhee|hepatite a|rage|encephalite/]],other:'Autre situation…'}};
+const phrasesOf=w=>[...(PRECISE[w]?.opts.map(o=>o[1])||[]),w];
+const chosen=(v,w)=>PRECISE[w]?.opts.find(o=>hasWord(v,o[1]));        // the precision in the field, if any
+const needOn=(v,w)=>phrasesOf(w).some(p=>hasWord(v,p));
 // Frequent situations (home screen): the words put in the field, then a need or the arrow. Each has its SPILF document in pack-005.
 const SUBJECTS=[['Pneumonie (PAC)','pneumonie aiguë communautaire'],['Pyélonéphrite','pyélonéphrite'],['Cystite','cystite'],['IU masculine','infections urinaires masculines'],
   ['Méningite','méningite bactérienne'],['Endocardite','endocardite'],['Dermohypodermite','dermohypodermite'],['Péritonite','péritonite'],
@@ -126,7 +147,7 @@ function keyLines(text,qt,needs,n=3,slides=true){
 }
 // One short piece of a page around its first query word (pages 2–5: one line each).
 function shortBit(text,qt,slides){const l=keyLines(text,qt,[],1,slides)[0];return l?cut(l.replace(/^… /,''),qt,90,12):'';}
-const needsIn=q=>NEEDS.map(x=>x[1]).filter(w=>hasWord(q,w));
+const needsIn=q=>NEEDS.map(x=>x[1]).filter(w=>needOn(q,w));
 function textOfPage(doc,page){if(!texts||!pageRows)return '';return (pageRows.get(doc+':'+page)||[]).map(i=>texts[i]||'').join('\n');}
 
 // ---------- page images through the bridge (cached) ----------
@@ -162,20 +183,54 @@ const keep=e=>e.preventDefault(); // keep the keyboard open while choosing a sug
 function fitQ(){const q=$('q'),cs=getComputedStyle(q),max=4*parseFloat(cs.lineHeight)+parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);
   q.style.height='auto';q.style.height=Math.min(q.scrollHeight,max)+'px';q.style.overflowY=q.scrollHeight>max+1?'auto':'hidden';}
 function setQ(v){$('q').value=v;fitQ();$('clear').hidden=!v;renderNeeds();}
-// Need buttons: pressed when their words are in the field. A tap adds or removes them; if the field then names a subject
-// (any other word), the search runs at once — e.g. « pyélonéphrite » then Durée = one tap to the result.
+// Need buttons: pressed when their words (or one of their precisions) are in the field, the precision then in the label
+// (« Allergie · Pénicilline »). A tap on a pressed button removes them. Durée and 1re intention add their words at once; the others
+// open the precision panel. If the field then names a subject (any other word), the search runs at once.
+let precise=null;  // need whose precision panel is open
 function renderNeeds(){const v=$('q').value;
-  $('needs').replaceChildren(...NEEDS.map(([label,w])=>el('button',{type:'button',class:'need','aria-pressed':String(hasWord(v,w)),onpointerdown:keep,onmousedown:keep,onclick:()=>toggleNeed(w)},label)));}
+  $('needs').replaceChildren(...NEEDS.map(([label,w])=>{const c=chosen(v,w);
+    return el('button',{type:'button',class:'need','aria-pressed':String(needOn(v,w)),'aria-expanded':PRECISE[w]?String(precise===w):null,onpointerdown:keep,onmousedown:keep,onclick:()=>toggleNeed(w)},
+      c?[label,el('span',{class:'need-c'},' · '+c[0])]:label);}));}
+// Precision panel, under the buttons (not over the results): the question, 3 to 5 frequent answers, « Sans précision » (the need's
+// word alone) and a field for anything else (« allergie » + what is typed).
+function openPrecise(w){precise=w;const P=PRECISE[w],box=$('precise'),rest=norm(restOf($('q').value));renderNeeds();$('assist').hidden=true;
+  const other=el('input',{type:'text',enterkeyhint:'search',placeholder:P.other,'aria-label':P.other,autocapitalize:'off',spellcheck:'false'});
+  const send=()=>{const x=other.value.trim();if(x)applyNeed(w,(norm(x).startsWith(norm(w))?'':w+' ')+x);};
+  other.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send();}});
+  box.replaceChildren(
+    el('div',{class:'p-head'},el('strong',{},P.ask),el('button',{type:'button',class:'icon small','aria-label':'Fermer',onpointerdown:keep,onmousedown:keep,onclick:closePrecise},icon('x'))),
+    el('div',{class:'p-opts'},...P.opts.filter(o=>!o[2]||!rest.trim()||o[2].test(rest)).map(([label,ph])=>el('button',{type:'button',class:'opt',onpointerdown:keep,onmousedown:keep,onclick:()=>applyNeed(w,ph)},label)),
+      el('button',{type:'button',class:'opt plain',onpointerdown:keep,onmousedown:keep,onclick:()=>applyNeed(w,w)},P.plain||'Sans précision')),
+    el('div',{class:'p-other'},other,el('button',{type:'button',class:'opt go-other',onclick:send},'OK')));
+  box.hidden=false;}
+function closePrecise(){if(!precise)return;precise=null;$('precise').hidden=true;renderNeeds();}
+function stripNeed(v,w){for(const p of phrasesOf(w))while(hasWord(v,p))v=removePhrase(v,p);return v;}
+function applyNeed(w,phrase){
+  const v=stripNeed($('q').value.trim(),w),next=(v?v+' ':'')+phrase;closePrecise();
+  if(subjectOf(next)){setQ(next);edited();return;}
+  setQ(next+' ');$('q').focus();assist();
+}
+// A need or a precision only changes the question; the search starts with the arrow (Arthur, 23/10: several precisions can be
+// chosen, and the screen is not taken over by a search at each tap). The arrow is highlighted until then.
+let shownSum='';
+function edited(){const go=$('go'),sum=$('rsum'),same=results.length&&$('q').value.trim()===query;
+  if(!go.classList.contains('ready'))shownSum=sum.textContent;go.classList.toggle('ready',!same);
+  if(history.state?.view==='results'&&results.length)sum.textContent=same?shownSum:'Question modifiée : touchez → pour relancer.';}
 function removePhrase(v,w){const toks=v.split(/\s+/).filter(Boolean),target=words(w),n=target.length;
   for(let i=0;i+n<=toks.length;i++)if(toks.slice(i,i+n).every((t,k)=>words(t).join(' ')===target[k])){toks.splice(i,n);break;}return toks.join(' ');}
-function subjectOf(v){let rest=v;for(const [,w] of NEEDS)rest=removePhrase(rest,w);return words(rest).filter(t=>!STOP.has(t)&&t.length>=3).length>0;}
+function restOf(v){for(const [,w] of NEEDS)v=stripNeed(v,w);return v;}   // the field without its needs: the situation
+function subjectOf(v){return words(restOf(v)).filter(t=>!STOP.has(t)&&t.length>=3).length>0;}
 function toggleNeed(w){
-  const v=$('q').value.trim(),next=hasWord(v,w)?removePhrase(v,w):(v?v+' ':'')+w;
-  if(subjectOf(next)){setQ(next);submit();return;}
-  setQ(next?next+' ':'');$('q').focus();assist();
+  const v=$('q').value.trim();
+  if(needOn(v,w)){closePrecise();const next=stripNeed(v,w);if(subjectOf(next)){setQ(next);edited();return;}setQ(next?next+' ':'');$('q').focus();assist();return;}
+  if(PRECISE[w]){if(precise===w)closePrecise();else openPrecise(w);return;}
+  const next=(v?v+' ':'')+w;
+  if(subjectOf(next)){setQ(next);edited();return;}
+  setQ(next+' ');$('q').focus();assist();
 }
 function assist(){
   const input=$('q'),v=input.value;$('clear').hidden=!v;fitQ();renderNeeds();
+  if(precise){if(document.activeElement===input)openPrecise(precise);$('assist').hidden=true;return;}   // the precision panel takes the place of the suggestions; its options follow the situation typed
   if(document.activeElement!==input){$('assist').hidden=true;return;}
   const list=$('suggest'),chips=$('chips');list.replaceChildren();chips.replaceChildren();
   const tokens=v.split(/\s+/).filter(Boolean),partial=/\s$/.test(v)?'':(tokens.at(-1)||''),np=norm(partial),prev=norm(/\s$/.test(v)?tokens.at(-1)||'':tokens.at(-2)||'');
@@ -263,7 +318,7 @@ function setDot(state,p,msg){const b=$('status');if(!b)return;b.className='statu
   dot.msg=msg||(state==='loading'?'Préparation de la recherche · '+Math.round(100*p)+' %':dot.msg);b.setAttribute('aria-label',dot.msg);b.title=dot.msg;
   // The same state in two words, readable at a glance (urgence prototype).
   const t=$('status-text');if(t){t.className='status-text '+state;t.textContent=state==='ready'?(engine.MODE==='sparka'?'Prêt · Sparka':'Prêt · hors ligne'):state==='error'?'Recherche indisponible':'Préparation… '+Math.round(100*p)+' %';}}
-function submit(){const q=$('q').value.trim();if(!q)return;$('q').blur();$('assist').hidden=true;
+function submit(){const q=$('q').value.trim();if(!q)return;closePrecise();$('q').blur();$('assist').hidden=true;$('go').classList.remove('ready');
   if(!engine.state.ready){pendingQuery=q;$('queued').hidden=false;$('queued').textContent='« '+q+' » : recherche lancée dès que l’app est prête.';navigate({view:'home'});return;}
   search(q);}
 // A question asked while the engine is still busy with the previous one replaces it: it starts as soon as the engine is free
@@ -317,7 +372,7 @@ function statusBadge(doc){const st=statusOf(doc);return st?el('span',{class:'bad
 // Reference table shortcut: a need (posologie, durée, allergie, enfant) and a name typed in the search (anti-infective, disease,
 // germ) → the page of the matching SPILF table that names it most often. A text lookup shown apart, under the best page (unless it is
 // that page); the ranking is unchanged.
-const SHEET_FOR={'posologie':SHEETS[0][0],'durée':SHEETS[1][0],'allergie bêta-lactamines':SHEETS[2][0],'enfant':SHEETS[3][0]};
+const SHEET_FOR={'posologie':SHEETS[0][0],'durée':SHEETS[1][0],'allergie':SHEETS[2][0],'enfant':SHEETS[3][0]};
 function shortcut(q,top){
   if(!texts||!pageRows||!lexicon.length)return null;
   const names=lexicon.filter(([n,k])=>k!=='situation'&&hasWord(q,n)).map(x=>x[0]).sort((a,b)=>b.length-a.length);
@@ -778,13 +833,15 @@ try{
   renderFreshness();if(history.state?.view==='docs')renderDocs();
   termsNorm=terms.map(t=>norm(t[0]));vocabSet=new Set(termsNorm.flatMap(t=>t.split(/[^\p{L}]+/u)).filter(Boolean));vocab=terms.filter(t=>!t[0].includes(' ')&&t[0].length>=4).map(t=>[t[0],norm(t[0]),t[1]]);
   if(history.state?.view==='home')renderHome();
+  // Page texts (key lines, reader): read while the model loads in its worker, so that the ≈ 0.7 s of reading them no longer
+  // falls just after « Recherche prête » (prototype « précisions », 23/10).
+  fetch(DATA+'texts.json').then(r=>r.ok?r.json():null).then(t=>{texts=t;if(results.length&&history.state?.view==='results')renderResults(),previewBest();}).catch(()=>{});
   corpus=await engine.load(()=>{},f=>{if(f>measured){measured=f;measuredAt=performance.now();}});
   clearInterval(ticker);store.set(STARTUP,Math.round(performance.now()-started));
   setDot('ready',1,'Recherche prête · '+(engine.MODE==='sparka'?'calcul sur Sparka':'hors ligne'));
   pageRows=new Map();corpus.rows.forEach((r,i)=>{const k=r.doc+':'+r.page;if(!pageRows.has(k))pageRows.set(k,[]);pageRows.get(k).push(i);});
   // Version of the app · data date · search model, on one line (short month so it fits a 375 px phone).
   $('about').textContent='Version '+VERSION+(dataDate?' · données du '+fmtDate(dataDate,'short'):'')+' · Gemma + BM25';
-  fetch(DATA+'texts.json').then(r=>r.ok?r.json():null).then(t=>{texts=t;if(results.length&&history.state?.view==='results')renderResults(),previewBest();}).catch(()=>{});
   window.startup=engine.state.startup;
   if(pendingQuery){const q=pendingQuery;pendingQuery=null;$('queued').hidden=true;search(q);}
   if(new URLSearchParams(location.search).has('bench'))runBench();

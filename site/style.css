@@ -48,6 +48,7 @@ h2{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mu
 .search input::-webkit-search-cancel-button{display:none}
 .go{align-self:flex-end;width:46px;height:46px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
 .go.busy svg{animation:pulse .9s ease-in-out infinite}
+.go.ready{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 28%,transparent)}  /* question changed by a need, not searched yet */
 @keyframes pulse{50%{transform:translateX(3px);opacity:.5}}
 .engine{margin:8px 2px 0;font-size:.82rem;color:var(--muted);display:flex;gap:8px;align-items:center}
 .engine::before{content:"";width:8px;height:8px;border-radius:50%;background:#c79a2a;flex:none;animation:blink 1.2s ease-in-out infinite}
@@ -252,6 +253,20 @@ dialog::backdrop{background:rgba(5,10,14,.45)}
 .need[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .need[aria-pressed=true]::before{content:"✓ "}
 .need:active{transform:scale(.97)}
+.need-c{font-weight:500}
+.need[aria-expanded=true]{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+/* Precision panel: under the need buttons, in the header (the results stay where they are) */
+.precise{margin:8px 0 0;padding:10px 12px 12px;border:1.5px solid var(--accent);border-radius:14px;background:var(--surface);box-shadow:var(--shadow)}
+.p-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.p-head strong{font-size:.95rem}
+.p-opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:0 13px;min-height:38px;font-size:.88rem;font-weight:600;color:var(--text)}
+.opt:active{transform:scale(.97)}
+.opt.plain{color:var(--muted);font-weight:500}
+.p-other{display:flex;gap:6px;margin-top:8px}
+.p-other input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:10px;padding:0 10px;min-height:38px;font:inherit;font-size:.9rem;background:var(--surface);color:var(--text)}
+.p-other input:focus{outline:none;border-color:var(--accent)}
+.opt.go-other{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 /* Suggestions: what the name is */
 .suggest small.kind{font-size:.72rem;background:var(--surface-2);border-radius:999px;padding:2px 8px}
 /* Home: frequent situations, reference tables */
