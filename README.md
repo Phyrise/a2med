@@ -18,6 +18,13 @@ le médecin lit le document original.
   - le modèle tourne dans un fil à part, si bien que l'écran ne se fige plus au démarrage ni pendant une recherche.
 - 0.8.1 : corrige un blocage de l'onglet dans le panneau, qui survenait avec une précision à trait d'union (« Bêta-lactamines »,
   « Nouveau-né »…) ou avec « l'enfant », « d'allergie » tapés dans la question.
+- 0.8.2 à 0.8.4 : l'app marche sur iPhone (essayée sur un iPhone 12 en iOS 17.4.1 ; attendu à partir d'iOS 16.4).
+  - 0.8.2 : le modèle (197 Mo) est enregistré en morceaux de 45 Mo au plus, recollés et vérifiés (SHA-256) par l'app. Safari
+    sur iPhone refusait le fichier entier avec « Internal error ».
+  - 0.8.3 : la mémoire du moteur de recherche (ONNX Runtime Web) est plafonnée à 512 Mo au lieu de 4 Go, que Safari sur iPhone
+    refusait de réserver (« RangeError: Out of memory »).
+  - 0.8.4 : ONNX Runtime Web 1.23.2 au lieu de 1.31-dev : les versions récentes ne démarrent pas sur Safari 17.0 à 17.4
+    (« Can't create a session », onnxruntime issue 33426). Mêmes résultats : 736/736 top 5 identiques sur le banc d'essai.
 - iPhone : ouvrir dans Safari puis « Partager → Sur l'écran d'accueil », et lancer l'app depuis l'icône.
 - Prototype de recherche, pas un dispositif médical : vérifiez toujours la page affichée.
 

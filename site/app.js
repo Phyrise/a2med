@@ -11,7 +11,7 @@ import * as engine from './engine.js';
 import {BASE,DEV,NS} from './config.js';
 import {localManifest} from './data.js';
 
-const VERSION='0.8.1';
+const VERSION='0.8.4';
 const DATA=BASE+'pack/ui/';
 
 // ---------- small helpers ----------

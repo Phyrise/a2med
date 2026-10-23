@@ -66,7 +66,19 @@ async function loadWorker(progress){
   await call({type:'load',model:{id:MODEL.id,dtype:MODEL.dtype},pack:BASE+'pack/',models:new URL('pack/models/',BASE).pathname,lib:BASE+'lib/',cache:NS+'-data'},progress);
   progress(1);
 }
+// A file stored in parts (data.js, 0.8.2: the model) is joined back into one response, as in sw.js.
+async function joined(cache,hit){
+  if(!hit?.headers.has('X-Parts'))return hit;
+  const parts=await Promise.all(JSON.parse(hit.headers.get('X-Parts')).map(k=>cache.match(k)));if(parts.some(r=>!r))return null;
+  const blob=new Blob(await Promise.all(parts.map(r=>r.blob())));
+  return new Response(blob,{headers:{'Content-Type':hit.headers.get('Content-Type'),'Content-Length':String(blob.size)}});
+}
+// ORT Web asks for a shared memory of up to 4 GB, which Safari on iPhone reserves at once and refuses (« RangeError: Out of
+// memory », 0.8.3). The model uses 239 MB (Mac, 23/10): 512 MB is enough. Same in engine-worker.js.
+function capMemory(){const M=WebAssembly.Memory,MAX=8192;if(M.capped)return;
+  const W=function(d){return new M(d?.shared&&d.maximum>MAX?{...d,maximum:MAX}:d);};W.prototype=M.prototype;W.capped=true;WebAssembly.Memory=W;}
 async function loadHere(progress){
+  capMemory();
   const T=await import('./lib/transformers.web.min.js'),{AutoModel,AutoTokenizer,AutoConfig,env}=T;Tensor=T.Tensor;
   env.allowRemoteModels=false;env.allowLocalModels=true;env.useBrowserCache=false;env.localModelPath=new URL('pack/models/',BASE).pathname;  // a path: Transformers.js joins it like a file path (a full URL loses its //)
   // Model files are read straight from the downloaded data, not through the service worker: Transformers.js fetches the weights
@@ -74,7 +86,7 @@ async function loadHere(progress){
   const PACK=BASE+'pack/';
   env.fetch=async(u,o)=>{const url=new URL(String(u),location.href);url.search='';
     if(!url.href.startsWith(PACK))return fetch(u,o);
-    return (await (await caches.open(NS+'-data')).match(url.href))||new Response('Données non installées',{status:404});};
+    const cache=await caches.open(NS+'-data');return (await joined(cache,await cache.match(url.href)))||new Response('Données non installées',{status:404});};
   env.backends.onnx.wasm.wasmPaths=BASE+'lib/';env.backends.onnx.wasm.numThreads=1;env.backends.onnx.wasm.proxy=false;
   tokenizer=await AutoTokenizer.from_pretrained(MODEL.id,{local_files_only:true});progress(.25);
   const config=await AutoConfig.from_pretrained(MODEL.id,{local_files_only:true});config.vision_config=config.audio_config=null;
