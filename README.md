@@ -16,6 +16,8 @@ le médecin lit le document original.
   - toucher Allergie, Posologie, Grossesse… ouvre un petit panneau de précisions (choix fréquents, ou texte libre) ;
   - la recherche part avec la flèche ;
   - le modèle tourne dans un fil à part, si bien que l'écran ne se fige plus au démarrage ni pendant une recherche.
+- 0.8.1 : corrige un blocage de l'onglet dans le panneau, qui survenait avec une précision à trait d'union (« Bêta-lactamines »,
+  « Nouveau-né »…) ou avec « l'enfant », « d'allergie » tapés dans la question.
 - iPhone : ouvrir dans Safari puis « Partager → Sur l'écran d'accueil », et lancer l'app depuis l'icône.
 - Prototype de recherche, pas un dispositif médical : vérifiez toujours la page affichée.
 

@@ -11,7 +11,7 @@ import * as engine from './engine.js';
 import {BASE,DEV,NS} from './config.js';
 import {localManifest} from './data.js';
 
-const VERSION='0.8';
+const VERSION='0.8.1';
 const DATA=BASE+'pack/ui/';
 
 // ---------- small helpers ----------
@@ -204,7 +204,8 @@ function openPrecise(w){precise=w;const P=PRECISE[w],box=$('precise'),rest=norm(
     el('div',{class:'p-other'},other,el('button',{type:'button',class:'opt go-other',onclick:send},'OK')));
   box.hidden=false;}
 function closePrecise(){if(!precise)return;precise=null;$('precise').hidden=true;renderNeeds();}
-function stripNeed(v,w){for(const p of phrasesOf(w))while(hasWord(v,p))v=removePhrase(v,p);return v;}
+// Stops as soon as a removal changes nothing: 0.8 looped forever (page frozen) when hasWord saw a phrase that removePhrase could not cut.
+function stripNeed(v,w){for(const p of phrasesOf(w))for(let u;hasWord(v,p)&&(u=removePhrase(v,p))!==v;)v=u;return v;}
 function applyNeed(w,phrase){
   const v=stripNeed($('q').value.trim(),w),next=(v?v+' ':'')+phrase;closePrecise();
   if(subjectOf(next)){setQ(next);edited();return;}
@@ -216,8 +217,15 @@ let shownSum='';
 function edited(){const go=$('go'),sum=$('rsum'),same=results.length&&$('q').value.trim()===query;
   if(!go.classList.contains('ready'))shownSum=sum.textContent;go.classList.toggle('ready',!same);
   if(history.state?.view==='results'&&results.length)sum.textContent=same?shownSum:'Question modifiée : touchez → pour relancer.';}
-function removePhrase(v,w){const toks=v.split(/\s+/).filter(Boolean),target=words(w),n=target.length;
-  for(let i=0;i+n<=toks.length;i++)if(toks.slice(i,i+n).every((t,k)=>words(t).join(' ')===target[k])){toks.splice(i,n);break;}return toks.join(' ');}
+// Cuts the phrase word by word, as hasWord sees it, so that « bêta-lactamines », « nouveau-né », « l'enfant » or « d'allergie » are
+// found too (0.8 cut whole space-separated tokens and missed them); an elided « l' », « d' », « qu' » just before and punctuation
+// stuck to the phrase (« (… », « …), ») go with it, as they did with whole tokens.
+function removePhrase(v,w){const target=words(w),n=target.length,toks=[...v.matchAll(/[\p{L}\p{N}\p{Mn}]+/gu)].filter(m=>words(m[0]).length);
+  for(let i=0;i+n<=toks.length;i++)if(target.every((t,k)=>words(toks[i+k][0]).join(' ')===t)){
+    let a=toks[i].index,b=toks[i+n-1].index+toks[i+n-1][0].length;const elided=v.slice(0,a).match(/(?:^|\s)((?:l|d|qu)['’])$/i);
+    if(elided)a-=elided[1].length;while(a>0&&/[^\s\p{L}\p{N}]/u.test(v[a-1]))a--;while(b<v.length&&/[^\s\p{L}\p{N}]/u.test(v[b]))b++;
+    return (v.slice(0,a)+' '+v.slice(b)).replace(/\s+/g,' ').trim();}
+  return v;}
 function restOf(v){for(const [,w] of NEEDS)v=stripNeed(v,w);return v;}   // the field without its needs: the situation
 function subjectOf(v){return words(restOf(v)).filter(t=>!STOP.has(t)&&t.length>=3).length>0;}
 function toggleNeed(w){
