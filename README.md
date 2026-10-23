@@ -25,6 +25,9 @@ le médecin lit le document original.
     refusait de réserver (« RangeError: Out of memory »).
   - 0.8.4 : ONNX Runtime Web 1.23.2 au lieu de 1.31-dev : les versions récentes ne démarrent pas sur Safari 17.0 à 17.4
     (« Can't create a session », onnxruntime issue 33426). Mêmes résultats : 736/736 top 5 identiques sur le banc d'essai.
+- 0.8.5 : boutons de précision allégés. Durée et 1re intention sont retirés (ils écrivaient seulement leur mot ; taper
+  « durée » marche comme avant). Les détails du patient viennent d'abord (Allergie · Grossesse · Enfant · Rein), puis
+  Posologie · Prophylaxie · Alternative. Mêmes données, même recherche.
 - iPhone : ouvrir dans Safari puis « Partager → Sur l'écran d'accueil », et lancer l'app depuis l'icône.
 - Prototype de recherche, pas un dispositif médical : vérifiez toujours la page affichée.
 

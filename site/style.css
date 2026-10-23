@@ -246,7 +246,7 @@ dialog::backdrop{background:rgba(5,10,14,.45)}
 /* Bigger field */
 .search textarea{font-size:1.1rem;padding:12px 4px;height:calc(1.35em + 24px)}
 .go{width:50px;height:50px}
-/* Need buttons under the field: one tap adds the word (and searches when a subject is there) */
+/* Need buttons under the field: one tap opens the precision panel; a thin line between the patient's details and what is looked for */
 .needs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px -12px 0;padding:0 12px 2px}
 .needs::-webkit-scrollbar{display:none}
 .need{flex:none;white-space:nowrap;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:0 14px;min-height:40px;font-size:.9rem;font-weight:600;color:var(--text)}
@@ -254,6 +254,7 @@ dialog::backdrop{background:rgba(5,10,14,.45)}
 .need[aria-pressed=true]::before{content:"✓ "}
 .need:active{transform:scale(.97)}
 .need-c{font-weight:500}
+.need-sep{flex:none;width:1.5px;margin:8px 2px;background:var(--line)}
 .need[aria-expanded=true]{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 /* Precision panel: under the need buttons, in the header (the results stay where they are) */
 .precise{margin:8px 0 0;padding:10px 12px 12px;border:1.5px solid var(--accent);border-radius:14px;background:var(--surface);box-shadow:var(--shadow)}

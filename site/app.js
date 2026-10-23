@@ -11,7 +11,7 @@ import * as engine from './engine.js';
 import {BASE,DEV,NS} from './config.js';
 import {localManifest} from './data.js';
 
-const VERSION='0.8.4';
+const VERSION='0.8.5';
 const DATA=BASE+'pack/ui/';
 
 // ---------- small helpers ----------
@@ -29,10 +29,14 @@ const icon=name=>{const s=document.createElementNS('http://www.w3.org/2000/svg',
 // Abbreviations are offered, never applied silently. List to validate with Alexia (same as 0.3).
 const ABBR={ei:'endocardite infectieuse',pna:'pyélonéphrite aiguë',pac:'pneumonie aiguë communautaire',iu:'infection urinaire',ium:'infection urinaire masculine',ioa:'infection ostéo-articulaire',idv:'infection disco-vertébrale',pth:'prothèse totale de hanche',ptg:'prothèse totale de genou',sarm:'Staphylococcus aureus résistant à la méticilline',sams:'Staphylococcus aureus sensible à la méticilline',blse:'bêta-lactamase à spectre étendu',epc:'entérobactérie productrice de carbapénémase',bhre:'bactérie hautement résistante émergente',icd:'infection à Clostridioides difficile',iim:'infection invasive à méningocoque',dhbnn:'dermohypodermite bactérienne non nécrosante',atb:'antibiothérapie',abp:'antibioprophylaxie',vzv:'varicelle zona',ist:'infection sexuellement transmissible',igh:'infection génitale haute',lcr:'liquide cérébrospinal',tb:'tuberculose',dfg:'débit de filtration glomérulaire'};
 
-// What the doctor needs, one tap each. Durée and 1re intention add their words to the search; the others first open a small panel
-// of precisions under the buttons (« précisions » prototype, 23/10, to show Arthur).
+// Needs recognised in the question: they choose the key lines and the reference table, and are not part of the situation.
 const NEEDS=[['Posologie','posologie'],['Durée','durée'],['1re intention','première intention'],['Allergie','allergie'],['Grossesse','grossesse'],
-  ['Enfant','enfant'],['Insuffisance rénale','insuffisance rénale'],['Alternative','alternative'],['Prophylaxie','prophylaxie']];
+  ['Enfant','enfant'],['Rein','insuffisance rénale'],['Alternative','alternative'],['Prophylaxie','prophylaxie']];
+// Buttons under the field, each opening a small panel of precisions. Only those that ask something: Durée and 1re intention just
+// typed their word, so they went (Arthur, 23/10). The patient's details come first, the ones not to forget; then what is looked for.
+// « Rein » (insuffisance rénale) is short so that the four details fit on a phone without scrolling.
+const BUTTONS=[['allergie','grossesse','enfant','insuffisance rénale'],['posologie','prophylaxie','alternative']];
+const labelOf=w=>NEEDS.find(x=>x[1]===w)[0];
 // Lines of a page that answer a need (used to choose the key lines shown under the best page, never to rank pages).
 const NEED_RX={'posologie':/\d\s?(mg|g|µg|UI)\b|mg\/kg|posologi|\bdoses?\b/iu,'durée':/\d\s?(j|jours?|semaines?|mois|h)\b|durée/iu,
   'première intention':/premi[eè]re intention|1(re|ère) intention/iu,'allergie':/allergi|b[eê]ta-?lactam|p[ée]nicilline/iu,'grossesse':/grossesse|enceinte/iu,
@@ -184,23 +188,24 @@ function fitQ(){const q=$('q'),cs=getComputedStyle(q),max=4*parseFloat(cs.lineHe
   q.style.height='auto';q.style.height=Math.min(q.scrollHeight,max)+'px';q.style.overflowY=q.scrollHeight>max+1?'auto':'hidden';}
 function setQ(v){$('q').value=v;fitQ();$('clear').hidden=!v;renderNeeds();}
 // Need buttons: pressed when their words (or one of their precisions) are in the field, the precision then in the label
-// (« Allergie · Pénicilline »). A tap on a pressed button removes them. Durée and 1re intention add their words at once; the others
-// open the precision panel. If the field then names a subject (any other word), the search runs at once.
+// (« Allergie · Pénicilline »). A tap on a pressed button removes them; on another, it opens the precision panel. A thin line
+// separates the patient's details from what is looked for.
 let precise=null;  // need whose precision panel is open
 function renderNeeds(){const v=$('q').value;
-  $('needs').replaceChildren(...NEEDS.map(([label,w])=>{const c=chosen(v,w);
+  const button=w=>{const c=chosen(v,w),label=labelOf(w);
     return el('button',{type:'button',class:'need','aria-pressed':String(needOn(v,w)),'aria-expanded':PRECISE[w]?String(precise===w):null,onpointerdown:keep,onmousedown:keep,onclick:()=>toggleNeed(w)},
-      c?[label,el('span',{class:'need-c'},' · '+c[0])]:label);}));}
+      c?[label,el('span',{class:'need-c'},' · '+c[0])]:label);};
+  $('needs').replaceChildren(...BUTTONS.flatMap((group,i)=>[...(i?[el('span',{class:'need-sep','aria-hidden':'true'})]:[]),...group.map(button)]));}
 // Precision panel, under the buttons (not over the results): the question, 3 to 5 frequent answers, « Sans précision » (the need's
-// word alone) and a field for anything else (« allergie » + what is typed).
+// word alone) and a field for anything else (« allergie » + what is typed). Grossesse and Enfant offer their own word first instead.
 function openPrecise(w){precise=w;const P=PRECISE[w],box=$('precise'),rest=norm(restOf($('q').value));renderNeeds();$('assist').hidden=true;
   const other=el('input',{type:'text',enterkeyhint:'search',placeholder:P.other,'aria-label':P.other,autocapitalize:'off',spellcheck:'false'});
   const send=()=>{const x=other.value.trim();if(x)applyNeed(w,(norm(x).startsWith(norm(w))?'':w+' ')+x);};
   other.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send();}});
   box.replaceChildren(
     el('div',{class:'p-head'},el('strong',{},P.ask),el('button',{type:'button',class:'icon small','aria-label':'Fermer',onpointerdown:keep,onmousedown:keep,onclick:closePrecise},icon('x'))),
-    el('div',{class:'p-opts'},...P.opts.filter(o=>!o[2]||!rest.trim()||o[2].test(rest)).map(([label,ph])=>el('button',{type:'button',class:'opt',onpointerdown:keep,onmousedown:keep,onclick:()=>applyNeed(w,ph)},label)),
-      el('button',{type:'button',class:'opt plain',onpointerdown:keep,onmousedown:keep,onclick:()=>applyNeed(w,w)},P.plain||'Sans précision')),
+    el('div',{class:'p-opts'},...(P.plain?[[P.plain,w]]:[]).concat(P.opts.filter(o=>!o[2]||!rest.trim()||o[2].test(rest))).map(([label,ph])=>el('button',{type:'button',class:'opt',onpointerdown:keep,onmousedown:keep,onclick:()=>applyNeed(w,ph)},label)),
+      P.plain?null:el('button',{type:'button',class:'opt plain',onpointerdown:keep,onmousedown:keep,onclick:()=>applyNeed(w,w)},'Sans précision')),
     el('div',{class:'p-other'},other,el('button',{type:'button',class:'opt go-other',onclick:send},'OK')));
   box.hidden=false;}
 function closePrecise(){if(!precise)return;precise=null;$('precise').hidden=true;renderNeeds();}
@@ -231,10 +236,7 @@ function subjectOf(v){return words(restOf(v)).filter(t=>!STOP.has(t)&&t.length>=
 function toggleNeed(w){
   const v=$('q').value.trim();
   if(needOn(v,w)){closePrecise();const next=stripNeed(v,w);if(subjectOf(next)){setQ(next);edited();return;}setQ(next?next+' ':'');$('q').focus();assist();return;}
-  if(PRECISE[w]){if(precise===w)closePrecise();else openPrecise(w);return;}
-  const next=(v?v+' ':'')+w;
-  if(subjectOf(next)){setQ(next);edited();return;}
-  setQ(next+' ');$('q').focus();assist();
+  if(precise===w)closePrecise();else openPrecise(w);
 }
 function assist(){
   const input=$('q'),v=input.value;$('clear').hidden=!v;fitQ();renderNeeds();
