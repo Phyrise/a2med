@@ -1,17 +1,14 @@
-// A²-Med 0.7 (release candidate, webapp_rc_0.7) = the « urgence » interface of webapp_proto_002_urgence (22/10), built from 0.6,
-// with the TC_i8 dense index (engine.js, pack-006). BM25, fusion and page grouping are 0.6's.
-// Changes for use in a hurry: need buttons (posologie, durée…) under the field, names of diseases / anti-infectives / germs from the
-// pack while typing, frequent situations and reference tables on the home screen, the best page with its key lines (doses and durations
-// stand out), pages 2–3 on one line each, 4–5 folded, a readable state (« Prêt · hors ligne »).
-// Two tabs: Question (search, best page first) and Documents (browse, sort).
-// A dedicated reader for any page. No LLM, no generated text, no feedback collection.
-// The ranking lives in engine.js (Gemma 1 Q4 512D + BM25); this file only knows load(), search() and known().
-if(!window.Local)await import('./dev-bridge.js');
+// The interface of A²-Med, for use in a hurry. Two tabs: Question (search, best page first) and Documents (browse, sort), and a
+// reader for any page. Under the field: need buttons (posologie…) and names of diseases / anti-infectives / germs while typing;
+// on the home screen: frequent situations and reference tables. Results: the best page with its key lines (doses and durations
+// stand out), pages 2–3 on one line each, 4–5 folded. No LLM, no generated text, no feedback collection.
+// The ranking lives in engine.js; this file only knows load(), search() and known(). Pages are drawn through window.Local
+// (web-bridge.js, pdf.js), the interface the former Android app offered.
 import * as engine from './engine.js';
-import {BASE,DEV,NS} from './config.js';
+import {BASE,NS} from './config.js';
 import {localManifest} from './data.js';
 
-const VERSION='0.8.5';
+const VERSION='0.8.6';
 const DATA=BASE+'pack/ui/';
 
 // ---------- small helpers ----------
@@ -326,8 +323,8 @@ function engineStatus(text,cls=''){const e=$('engine');e.hidden=!text;e.classNam
 const dot={msg:'Préparation de la recherche'};
 function setDot(state,p,msg){const b=$('status');if(!b)return;b.className='status-dot '+state;b.style.setProperty('--p',Math.round(100*p));
   dot.msg=msg||(state==='loading'?'Préparation de la recherche · '+Math.round(100*p)+' %':dot.msg);b.setAttribute('aria-label',dot.msg);b.title=dot.msg;
-  // The same state in two words, readable at a glance (urgence prototype).
-  const t=$('status-text');if(t){t.className='status-text '+state;t.textContent=state==='ready'?(engine.MODE==='sparka'?'Prêt · Sparka':'Prêt · hors ligne'):state==='error'?'Recherche indisponible':'Préparation… '+Math.round(100*p)+' %';}}
+  // The same state in two words, readable at a glance.
+  const t=$('status-text');if(t){t.className='status-text '+state;t.textContent=state==='ready'?'Prêt · hors ligne':state==='error'?'Recherche indisponible':'Préparation… '+Math.round(100*p)+' %';}}
 function submit(){const q=$('q').value.trim();if(!q)return;closePrecise();$('q').blur();$('assist').hidden=true;$('go').classList.remove('ready');
   if(!engine.state.ready){pendingQuery=q;$('queued').hidden=false;$('queued').textContent='« '+q+' » : recherche lancée dès que l’app est prête.';navigate({view:'home'});return;}
   search(q);}
@@ -349,7 +346,7 @@ async function search(q){
   if(err){$('rsum').textContent='Recherche interrompue : '+err.message;return {error:err.message};}
   results=r.pages;lexicalHits=r.lexicalHits;
   if(!results.length){$('rsum').textContent='Aucune page trouvée.';$('after').hidden=false;return null;}
-  const where=(engine.MODE==='sparka'?'calcul sur Sparka':'hors ligne')+(DEV&&r.index?' · index '+r.index:''),secs=ms=>(ms/1000).toFixed(1).replace('.',',')+' s';
+  const where='hors ligne',secs=ms=>(ms/1000).toFixed(1).replace('.',',')+' s';
   const tr=performance.now();renderResults();r.times.render_ms=performance.now()-tr;window.lastTimes=r.times;$('rsum').textContent=results.length+' pages · '+where;  // render_ms: cost of the key lines and shortcut (prototype)
   const mine=results,begin=performance.now(),shown=await previewBest();r.times.first_page_ms=r.times.retrieval_ms+performance.now()-begin;
   // Time from the question to the first page on screen (as in the Android app); the search alone if the page was not shown.
@@ -357,25 +354,7 @@ async function search(q){
   if(results===mine)for(const p of results.slice(1,3))pageURL(p.row.doc,p.row.page,'std',()=>results===mine).catch(()=>{});
   return {question:q,times:r.times,first_page_rendered:shown,top5:mine.map(p=>p.row.pid)};  // returned to the dev console only, not stored
 }
-// Load measurement (dev only), on the phone with the CPU/RAM/temperature sampler of bench_engines.py: ?bench=<label>[&n=30&gap=3&idle=45]
-// rest → n questions through the normal search (results and first page shown), one every `gap` s → rest. Sent to /results.
-async function runBench(){
-  const u=new URLSearchParams(location.search),n=+(u.get('n')||30),gap=+(u.get('gap')||3)*1000,idle=+(u.get('idle')||45)*1000;
-  const wait=ms=>new Promise(r=>setTimeout(r,ms)),R={label:u.get('bench')||'run',mode:engine.MODE,ua:navigator.userAgent,startup:engine.state.startup,marks:[],queries:[]};
-  const mark=phase=>R.marks.push({phase,t:Date.now()}),heap=()=>performance.memory?Math.round(performance.memory.usedJSHeapSize/2**20):null;
-  const qs=(await (await fetch(BASE+'dev/tests/parity-expected.json')).json()).questions.slice(0,n);
-  const lock=await navigator.wakeLock?.request('screen').catch(()=>null);R.screen_kept_on=Boolean(lock);  // the screen goes off after 60 s otherwise
-  benching=true;mark('rest-before');await wait(idle);mark('searches');R.heap_before_mb=heap();
-  for(const x of qs){const t=performance.now(),r=await search(x.question);
-    R.queries.push({id:x.id,wall_ms:Math.round(performance.now()-t),times:r?.times,same_top5:r?.top5?.map(pid=>{const i=corpus.rows.findIndex(w=>w.pid===pid),w=corpus.rows[i];return w.doc+':'+w.page;}).join()===x.top5.join(),error:r?.error});
-    await wait(gap);}
-  R.heap_after_mb=heap();benching=false;mark('rest-after');await wait(idle);mark('end');
-  await fetch(BASE+'results',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(R)}).catch(()=>{});
-  lock?.release();
-  $('rsum').textContent='Mesure terminée ('+R.queries.length+' questions).';
-}
-let benching=false;  // runBench: its questions do not go into « Récentes »
-function remember(q){if(benching)return;const r=store.get(RECENT,[]).filter(x=>x.q!==q);r.unshift({q,at:Date.now()});store.set(RECENT,r.slice(0,12));}
+function remember(q){const r=store.get(RECENT,[]).filter(x=>x.q!==q);r.unshift({q,at:Date.now()});store.set(RECENT,r.slice(0,12));}
 
 // ---------- results ----------
 function statusBadge(doc){const st=statusOf(doc);return st?el('span',{class:'badge '+st.level},st.label):null;}
@@ -786,7 +765,6 @@ function initSettings(){
   const sizes=[...$('textsize').querySelectorAll('button')];
   const showSize=()=>{const v=store.get(NS+'-textsize','1');for(const b of sizes)b.setAttribute('aria-checked',String(b.dataset.v===v));};
   for(const b of sizes)b.onclick=()=>{store.set(NS+'-textsize',b.dataset.v);applyTheme();showSize();};showSize();
-  $('engine-mode').closest('label').hidden=!DEV;$('engine-mode').value=engine.MODE;$('engine-mode').onchange=e=>{engine.setMode(e.target.value);location.reload();};  // the model is loaded (or not) at start
   $('forget').onclick=()=>{if(!confirm('Effacer l’historique des recherches et toutes les pages enregistrées ?'))return;store.set(RECENT,[]);store.set(SAVED,[]);renderHome();if(history.state?.view==='docs')renderDocs();toast('Historique et pages enregistrées effacés');};
 }
 
@@ -817,7 +795,7 @@ function wire(){
   $('r-more').onclick=()=>{const m=$('r-menu');m.hidden=!m.hidden;$('r-more').setAttribute('aria-expanded',String(!m.hidden));};
   $('m-text').onclick=()=>{closeMenu();showText();};
   $('m-copy').onclick=async()=>{closeMenu();const ref=reference();try{await navigator.clipboard.writeText(ref);toast('Référence copiée');}catch{toast(ref);}};
-  $('m-pdf').onclick=()=>{closeMenu();if(window.a2medDevBridge)toast('Ouverture du PDF complet : sur le téléphone');else Local.openPdf(cur.doc,cur.page);};
+  $('m-pdf').onclick=()=>{closeMenu();Local.openPdf(cur.doc,cur.page);};
   $('doc-filter').addEventListener('input',renderDocs);
   addEventListener('scroll',()=>$('appbar').classList.toggle('scrolled',scrollY>4),{passive:true});
   initGestures();initSettings();
@@ -825,7 +803,6 @@ function wire(){
 
 // ---------- start ----------
 applyTheme();wire();history.replaceState({view:'home'},'');apply({view:'home'});
-if(window.a2medDevBridge){const b=el('div',{class:'dev'},'Aperçu Mac · moteur 0.4 (Gemma 1 Q4 512D + BM25)');document.body.append(b);setTimeout(()=>b.style.opacity='0',4000);}
 window.runSearch=search;
 // Progress: the steps engine.js can measure, and in between an estimate from how long the last start took on this device.
 const STARTUP=NS+'-startup-ms',started=performance.now(),expected=Math.max(1500,+store.get(STARTUP,4000)||4000);
@@ -836,7 +813,7 @@ const tick=()=>{const now=performance.now();shown=Math.max(shown,.9*Math.min(1,(
 $('status').onclick=()=>toast(dot.msg);
 const ticker=setInterval(tick,120);
 try{
-  // pack-info.json: SPILF check date and the pack's new/updated documents (generated on Sparka into pack/ui/).
+  // pack-info.json: SPILF check date and the pack's new/updated documents (written into pack/ui/ by pipeline/refresh.py).
   [docs,terms,info,lexicon]=await Promise.all([fetch(DATA+'docs.json').then(r=>r.ok?r.json():[]).catch(()=>[]),fetch(DATA+'terms.json').then(r=>r.ok?r.json():[]).catch(()=>[]),
     fetch(DATA+'pack-info.json').then(r=>r.ok?r.json():null).catch(()=>null),fetch(BASE+'lexicon.json').then(r=>r.ok?r.json():[]).catch(()=>[])]);
   dataDate=(await localManifest().catch(()=>null))?.date||info?.pack_date||null;
@@ -844,15 +821,14 @@ try{
   termsNorm=terms.map(t=>norm(t[0]));vocabSet=new Set(termsNorm.flatMap(t=>t.split(/[^\p{L}]+/u)).filter(Boolean));vocab=terms.filter(t=>!t[0].includes(' ')&&t[0].length>=4).map(t=>[t[0],norm(t[0]),t[1]]);
   if(history.state?.view==='home')renderHome();
   // Page texts (key lines, reader): read while the model loads in its worker, so that the ≈ 0.7 s of reading them no longer
-  // falls just after « Recherche prête » (prototype « précisions », 23/10).
+  // falls just after « Recherche prête » (0.8).
   fetch(DATA+'texts.json').then(r=>r.ok?r.json():null).then(t=>{texts=t;if(results.length&&history.state?.view==='results')renderResults(),previewBest();}).catch(()=>{});
   corpus=await engine.load(()=>{},f=>{if(f>measured){measured=f;measuredAt=performance.now();}});
   clearInterval(ticker);store.set(STARTUP,Math.round(performance.now()-started));
-  setDot('ready',1,'Recherche prête · '+(engine.MODE==='sparka'?'calcul sur Sparka':'hors ligne'));
+  setDot('ready',1,'Recherche prête · hors ligne');
   pageRows=new Map();corpus.rows.forEach((r,i)=>{const k=r.doc+':'+r.page;if(!pageRows.has(k))pageRows.set(k,[]);pageRows.get(k).push(i);});
   // Version of the app · data date · search model, on one line (short month so it fits a 375 px phone).
   $('about').textContent='Version '+VERSION+(dataDate?' · données du '+fmtDate(dataDate,'short'):'')+' · Gemma + BM25';
   window.startup=engine.state.startup;
   if(pendingQuery){const q=pendingQuery;pendingQuery=null;$('queued').hidden=true;search(q);}
-  if(new URLSearchParams(location.search).has('bench'))runBench();
 }catch(e){clearInterval(ticker);setDot('error',0,'Recherche indisponible : '+e.message);engineStatus(dot.msg,'error');}

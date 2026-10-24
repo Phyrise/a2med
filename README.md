@@ -7,7 +7,7 @@ du PDF ou la diapo la plus pertinente des recommandations, puis les suivantes. A
 le médecin lit le document original.
 
 - Fonctionne **hors ligne** une fois installée : au premier lancement, l'app télécharge le modèle de recherche, l'index et les
-  PDF (environ 420 Mo, Wi-Fi conseillé), puis tout reste sur le téléphone. Les mises à jour ne téléchargent que les fichiers
+  PDF (environ 410 Mo, Wi-Fi conseillé), puis tout reste sur le téléphone. Les mises à jour ne téléchargent que les fichiers
   modifiés (vérifiés par SHA-256).
 - Recherche : EmbeddingGemma 300M (Q4, 512 dimensions) exécuté dans le navigateur + BM25, fusion RRF, résultats par page.
   Depuis la 0.7, l'index TC_i8 : chaque passage est encodé avec le titre de son document, la fin des passages longs a ses
@@ -28,6 +28,9 @@ le médecin lit le document original.
 - 0.8.5 : boutons de précision allégés. Durée et 1re intention sont retirés (ils écrivaient seulement leur mot ; taper
   « durée » marche comme avant). Les détails du patient viennent d'abord (Allergie · Grossesse · Enfant · Rein), puis
   Posologie · Prophylaxie · Alternative. Mêmes données, même recherche.
+- 0.8.6 : app allégée, mêmes résultats (736/736 top 5 identiques sur le banc d'essai). Les modes d'essai et l'ancien index
+  de la 0.6 sont retirés ; les tables de polices CJK de pdf.js aussi, aucun des 119 PDF n'en a besoin. Données pack-007 :
+  le même corpus sans l'ancien index (408 Mo pour une installation neuve, rien à retélécharger pour une mise à jour).
 - iPhone : ouvrir dans Safari puis « Partager → Sur l'écran d'accueil », et lancer l'app depuis l'icône.
 - Prototype de recherche, pas un dispositif médical : vérifiez toujours la page affichée.
 
@@ -38,9 +41,9 @@ le médecin lit le document original.
     (188 Mo) est découpé en morceaux de 45 Mio (`.part1`…), recollés et vérifiés par l'app.
 - Documents : recommandations SPILF et sociétés associées, librement redistribuables.
 
-## Mettre à jour (sur le Mac, dossier `AA-Med`)
-Depuis la 0.8, l'app vient de `webapp_proto_003_precisions/` (la 0.7 venait de `webapp_rc_0.7/`).
-1. Nouveau pack prêt dans `mobile_final_004/pack-NNN/` : `python3 webapp_proto_003_precisions/announce_pack.py pack-NNN`
-2. Après une modification de l'app : `python3 webapp_proto_003_precisions/stamp_shell.py`
-3. `python3 webapp_proto_003_precisions/build_github.py github_a2med` (reconstruit `site/`), puis commit et push.
+## Mettre à jour (dépôt `a2med`, à côté de cette copie)
+Depuis la 0.8.6, l'app et ses données viennent du dépôt `a2med` (son `README.md` décrit tout, de A à Z).
+1. Nouvelle release des données : `pipeline/refresh.py changes/<date>.json --base releases/pack-NNN --out releases/pack-MMM`
+2. Après une modification de l'app : `python3 publish/stamp_shell.py`
+3. `python3 publish/build_site.py releases/pack-MMM ../github_a2med` (reconstruit `site/`), puis commit et push.
 Les téléphones voient la mise à jour au retour dans l'app (ou Réglages → Données et mises à jour → Vérifier maintenant).

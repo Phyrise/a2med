@@ -1,8 +1,8 @@
 {
  "format": 1,
- "pack": "pack-006",
- "date": "2026-10-22",
- "base": "pack-006/files/",
+ "pack": "pack-007",
+ "date": "2026-10-24",
+ "base": "pack-007/files/",
  "model": "embeddinggemma-300m-q4",
  "corpus_fingerprint": "45e2c39e21ac7764151a9d98b67ca6aa6302cc2282acd0b9dacb44b38fb01e67",
  "blocks": [
@@ -680,7 +680,7 @@
   {
    "id": "index",
    "label": "Index et textes",
-   "bytes": 46671778,
+   "bytes": 28379042,
    "files": [
     {
      "path": "bm25.json",
@@ -716,11 +716,6 @@
      "path": "ui/texts.json",
      "bytes": 11653911,
      "sha256": "3c1970094d56426eff81deef4a8a80df7b7c15c28a338e209d248a00c91ef8a3"
-    },
-    {
-     "path": "vectors-gemma-q4-512.bin",
-     "bytes": 18292736,
-     "sha256": "7f481d9a3e0f8c686a79ac43b8cba7af695993854ff90883ed1f61bfa90e2c9c"
     },
     {
      "path": "vectors-tc-i8.bin",

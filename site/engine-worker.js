@@ -1,4 +1,4 @@
-// The question encoder in a worker (« précisions » prototype, 23/10): the same Transformers.js model, settings and token handling
+// The question encoder in a worker (0.8): the same Transformers.js model, settings and token handling
 // as engine.js had on the main thread (ORT Web WASM, one thread), so the screen no longer freezes while the model loads (≈ 6 s on
 // the Mac) or encodes a question (≈ 0.5 s). Messages: load {model, pack, models, lib, cache} → progress… then ok;
 // encode {text} → the raw 768D sentence embedding (normalised and truncated by engine.js, as before). One message at a time.

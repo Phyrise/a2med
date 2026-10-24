@@ -14,7 +14,7 @@ async function pdf(id){
   if(open.has(id)){const p=open.get(id);open.delete(id);open.set(id,p);return p;}
   const d=(await docs())[id];if(!d||d.id!==id)throw Error('Document inconnu');
   const task=pdfjs.getDocument({url:BASE+'pack/'+d.file,disableRange:true,disableStream:true,disableAutoFetch:true,isEvalSupported:false,
-    cMapUrl:VENDOR+'cmaps/',cMapPacked:true,standardFontDataUrl:VENDOR+'standard_fonts/'});
+    standardFontDataUrl:VENDOR+'standard_fonts/'});  // no cmaps/ since 0.8.6: all CJK fonts of the corpus are embedded (Identity-H)
   open.set(id,task.promise);task.promise.catch(()=>open.delete(id));
   while(open.size>3){const [k,p]=open.entries().next().value;open.delete(k);p.then(x=>x.destroy()).catch(()=>{});}
   return task.promise;
