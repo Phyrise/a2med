@@ -1825,25 +1825,25 @@
    "id": "srlf",
    "label": "Réanimation (SRLF)",
    "optional": true,
-   "release": "srlf-001",
-   "date": "2026-10-28",
+   "release": "srlf-002",
+   "date": "2026-10-29",
    "checked": "2026-10-26",
-   "bytes": 47720799,
+   "bytes": 50502363,
    "files": [
     {
      "path": "srlf/bm25.json",
-     "bytes": 3126325,
-     "sha256": "51d978fc1b16e16b2652645cdcbe7468c5f404a122f033dc2a3cd6beb18a4cfa"
+     "bytes": 3309581,
+     "sha256": "8911d283ef05fb50620758235b34884acd3bd91d3a7bc5ff0bc1776b7c2ba919"
     },
     {
      "path": "srlf/corpus-meta.json",
-     "bytes": 331338,
-     "sha256": "8e1aab87f06d6687c10ba101fc7645907fca144dfd318643e234163a84bc0682"
+     "bytes": 340935,
+     "sha256": "a1bd4f9ae060dcbfe6b1b28cfdf22bbf30207a5ff1c80a21109554ba10bb4d61"
     },
     {
      "path": "srlf/documents.json",
-     "bytes": 33193,
-     "sha256": "3588f77285bcb085acfd74abf60a15f9f6ca80b4d1024d469e29dbc09340edbc"
+     "bytes": 34224,
+     "sha256": "7f13055599a8b0e836de5c20d09585369e20fcea7e2af066d74a44e7efd0ebc3"
     },
     {
      "path": "srlf/pdf/0.pdf",
@@ -2121,9 +2121,19 @@
      "sha256": "c1acdc57f726c5d77baf00fedee00ff875b83303c242e18d6a8b3ce87113ed69"
     },
     {
+     "path": "srlf/pdf/59.pdf",
+     "bytes": 1337436,
+     "sha256": "ffd70482df21d2a0d037b2b70bb4bbcbbae924a87a486cf77f2bca739fb5f8b3"
+    },
+    {
      "path": "srlf/pdf/6.pdf",
      "bytes": 1349390,
      "sha256": "9018de3b891a32df0824976a3f63ad1350b4d8c019666d08457512434ef540fb"
+    },
+    {
+     "path": "srlf/pdf/60.pdf",
+     "bytes": 975051,
+     "sha256": "463620dd583325bde2dad873d9d58caa3d53d39a622466bcda394ccf65900044"
     },
     {
      "path": "srlf/pdf/7.pdf",
@@ -2142,38 +2152,38 @@
     },
     {
      "path": "srlf/ui/docs.json",
-     "bytes": 43386,
-     "sha256": "22578bbdfe43467d619b555a995fe1ed7091cacf5ce650fb06366f713dcd388e"
+     "bytes": 45237,
+     "sha256": "d2e817e7b8c71326f13a08e5e314a1c24be9237c634ac5dde7d1c00ee5cd2fb4"
     },
     {
      "path": "srlf/ui/pack-info.json",
-     "bytes": 711,
-     "sha256": "b7e046ecebcd24eaf364690e0f3819d47248acab6e23220057c924dea8c4c9b8"
+     "bytes": 709,
+     "sha256": "4c37f47ff9233ed57a6a2f5c21f1950ce66552eb81e98b8a25ed9d69f831ad28"
     },
     {
      "path": "srlf/ui/terms.json",
-     "bytes": 229746,
-     "sha256": "90a2ce6fb3c4f4feae92030124ef7127608e727550adde1d01998d7eb4c33ef1"
+     "bytes": 230128,
+     "sha256": "0494327c86749f806508bf907226a4e7699797e7e135676ca60d23df6596b59e"
     },
     {
      "path": "srlf/ui/texts.json",
-     "bytes": 4208484,
-     "sha256": "fa7421b8a42c63f4645f16ec7da83fd1318f54a1f962af177e1f2f281036261c"
+     "bytes": 4401502,
+     "sha256": "8506fcbb7230650a68bc8c94056f428298368b363905b6f6f32e5b5cd794d2b2"
     },
     {
      "path": "srlf/vectors-tc-i8.bin",
-     "bytes": 1718784,
-     "sha256": "5327b15b0f0197413ee759f4e59d80109bbdcbf482cd4a985948687eb6702ca1"
+     "bytes": 1797632,
+     "sha256": "342c748122b15447b39b6bed573bb5b0b50cd67bb8ad6401ff2941ab028631bc"
     },
     {
      "path": "srlf/vectors-tc-rows.bin",
-     "bytes": 8736,
-     "sha256": "9e8f345bc2defc0b592a6fc40bf4d6ebcba2ffb278fb930d93cd018723ffeebf"
+     "bytes": 9216,
+     "sha256": "cfcec1dc4e839fbfc18ec7f3f02a15f4b552d40ab897fd259e4bfcaf1096942a"
     },
     {
      "path": "srlf/vectors-tc-scale.bin",
-     "bytes": 13428,
-     "sha256": "6aa9a564c5671a7c7d88a0150df0b15eedde34216e126494b974e1173cae8978"
+     "bytes": 14044,
+     "sha256": "b9c294aa38805affa61b7f6ffeff89fba9ce6230b8e8db89f2cb6188429d33b0"
     }
    ]
   }

@@ -44,7 +44,7 @@ async function showData(local,remote,p,{closable,recheck,checked,checking}){
   const changed=extra.some(b=>has(b.id)!==want(b.id));
   const srcRows=extra.map(b=>`<li><label class="pick"><input type="checkbox" data-src="${b.id}"${want(b.id)?' checked':''}${!remote&&!has(b.id)?' disabled':''}>`
     +`<span>${b.label}<small>${data.mb(b.bytes)} · ${b.files.filter(f=>f.path.includes('/pdf/')).length} documents</small></span></label>`
-    +`<span>${want(b.id)?(has(b.id)?'installée':'à télécharger'):(has(b.id)?'à retirer':'')}</span></li>`).join('');
+    +`<span>${want(b.id)?(has(b.id)?(p.blocks[b.id]?`${files(p.blocks[b.id].files)} · ${data.mb(p.blocks[b.id].bytes)}`:'installée'):'à télécharger'):(has(b.id)?'à retirer':'')}</span></li>`).join('');  // installed with an update: what it downloads (0.9.1)
   const kept=local?local.blocks.filter(b=>!b.optional||has(b.id)):[];
   const total=first?'':` · ${data.mb(kept.reduce((s,b)=>s+b.bytes,0))}`;
   const act=remote&&p.bytes||!p.bytes&&changed;

@@ -1360,5 +1360,49 @@
 "ref": 431,
 "lang": "en",
 "twins": []
+},
+{
+"id": 59,
+"title": "Encéphalopathie aiguë en réanimation : un consensus d’experts pour améliorer la prise en charge",
+"kind": "Consensus d’experts",
+"year": 2025,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2025-Encephalopathie-aigue-consensus-experts.pdf",
+"pages": 18,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Ajout manuel du 2026-10-29 (Arthur) : la fiche SRLF ne donne qu’un lien vers l’article, en accès libre sous licence CC BY 4.0 (Annals of Intensive Care) ; fiche : https://www.srlf.org/article/encephalopathie-aigue-reanimation-consensus-dexperts-ameliorer-prise-charge Texte de 14 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 13 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 18,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 432,
+"lang": "en",
+"twins": []
+},
+{
+"id": 60,
+"title": "Conférence de consensus SRLF (2024) - Épuration Extra-Rénale en Réanimation",
+"kind": "Conférence de consensus",
+"year": 2025,
+"domain": "Réanimation",
+"source": "SRLF + GFRUP",
+"filename": "SRLF-2025-Epuration-extra-renale-conference-consensus.pdf",
+"pages": 16,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Ajout manuel du 2026-10-29 (Arthur) : la fiche SRLF ne donne qu’un lien vers l’article, en accès libre sous licence CC BY 4.0 (Annals of Intensive Care) ; fiche : https://www.srlf.org/article/conference-consensus-srlf-2024-epuration-extra-renale-reanimation Texte de 15 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 12 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 16,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 433,
+"lang": "en",
+"twins": []
 }
 ]

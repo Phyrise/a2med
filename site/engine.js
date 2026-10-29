@@ -31,7 +31,10 @@ export async function load(status=()=>{},progress=()=>{},{sources=[],pairs=new M
   // The worker loads the model while this page reads the documents (both took turns on one thread before).
   let modelMs=0;const inWorker=loadWorker(progress).then(()=>{modelMs=performance.now()-t0;},
     e=>{worker?.terminate();worker=null;state.worker_error=String(e?.message||e);});
-  packs=await Promise.all(installedSources(sources).map(loadPack));twins=pairs;progress(.15);
+  // An optional source that does not load (0.9.1: data installed for an older app, e.g. srlf-001 under an app expecting srlf-002,
+  // until the update offered in Réglages → Données) is left out of the search instead of stopping it; state.stale lists it.
+  const got=await Promise.all(installedSources(sources).map(s=>loadPack(s).catch(e=>{if(s.id==='spilf')throw e;return {stale:s.id,error:e.message};})));
+  packs=got.filter(p=>!p.stale);state.stale=got.filter(p=>p.stale);twins=pairs;progress(.15);
   let first=0;const rows=[],documents=[];
   for(const p of packs){p.first=first;first+=p.corpus.n;const o=p.source.offset;
     for(const r of p.corpus.rows)rows.push(o?{...r,doc:r.doc==null?r.doc:r.doc+o}:r);

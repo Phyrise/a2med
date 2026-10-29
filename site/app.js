@@ -9,7 +9,7 @@ import {BASE,NS} from './config.js';
 import {localManifest,installed,dateOf} from './data.js';
 import {SOURCES,installedSources,sourceOf} from './sources.js';
 
-const VERSION='0.9.0';
+const VERSION='0.9.1';
 
 // ---------- small helpers ----------
 const $=id=>document.getElementById(id);
@@ -71,8 +71,9 @@ let antiSet=null;const antiWords=()=>antiSet?.size?antiSet:antiSet=new Set(lexic
 
 // ---------- state ----------
 let corpus=null,docs=[],terms=[],termsNorm=[],vocab=[],vocabSet=new Set(),texts=null,pageRows=null,info=null;
-// Sources (0.9): installed sources (sources.js), the ones searched, documents by id (ids offset per source).
-let sources=[],scope=[],docById=new Map(),cdoc=new Map();
+// Sources (0.9): installed sources (sources.js), the ones searched, documents by id (ids offset per source). stale (0.9.1): ids
+// of installed sources the engine left out (data older than this version of the app, until updated).
+let sources=[],scope=[],stale=[],docById=new Map(),cdoc=new Map();
 let pendingQuery=null,busy=false,query='',results=[],lexicalHits=0,cur=null,lastQuestionView='home';
 const RECENT=NS+'-recent',SAVED=NS+'-pins',SORT=NS+'-doc-sort';  // same keys as 0.3 for recent searches and saved pages; texts.json is aligned with corpus.rows
 
@@ -360,13 +361,15 @@ function remember(q){const r=store.get(RECENT,[]).filter(x=>x.q!==q);r.unshift({
 
 // ---------- sources (0.9) ----------
 // Under the field, one chip per source: an installed one can be ticked (at least one stays on), the others are greyed and say
-// where to install them. Touching one while results are shown searches again in the new choice.
+// where to install them (or to update them, 0.9.1). Touching one while results are shown searches again in the new choice.
 const SCOPE=NS+'-scope';
 function renderScope(){const box=$('scope');box.hidden=!sources.length;if(box.hidden)return;
+  const off=(s,why,say)=>el('button',{type:'button',class:'scope-chip','aria-disabled':'true',title:s.name+' : '+why,onclick:()=>toast(say)},s.label);
   box.replaceChildren(el('span',{class:'scope-label'},'Chercher dans'),...SOURCES.map(s=>!sources.includes(s)
-    ?el('button',{type:'button',class:'scope-chip','aria-disabled':'true',title:s.name+' : non installée',onclick:()=>toast(`Installez ${s.label} (Réglages → Données) pour chercher dedans`)},s.label)
+    ?off(s,'non installée',`Installez ${s.label} (Réglages → Données) pour chercher dedans`)
+    :stale.includes(s.id)?off(s,'à mettre à jour',`Mettez à jour ${s.label} (Réglages → Données) pour chercher dedans`)
     :el('button',{type:'button',class:'scope-chip','aria-pressed':String(scope.includes(s.id)),title:s.name,
-    onclick:()=>{const on=scope.includes(s.id);if(on&&scope.length===1){toast('Gardez au moins une source');return;}
+    onclick:()=>{const on=scope.includes(s.id);if(on&&scope.filter(id=>!stale.includes(id)).length===1){toast('Gardez au moins une source');return;}
       scope=SOURCES.filter(x=>x.id===s.id?!on:scope.includes(x.id)).map(x=>x.id);store.set(SCOPE,{on:scope,known:sources.map(x=>x.id)});renderScope();
       if(history.state?.view==='results'&&query)search(query);}},s.label)));}
 
@@ -856,12 +859,18 @@ try{
   if(history.state?.view==='home')renderHome();
   // Page texts (key lines, reader): read while the model loads in its worker, so that the ≈ 0.7 s of reading them no longer
   // falls just after « Recherche prête » (0.8).
-  Promise.all(sources.map(s=>ui(s,'texts.json',null))).then(t=>{if(t.some(x=>!x))return;texts=t.flat();if(results.length&&history.state?.view==='results')renderResults(),previewBest();}).catch(()=>{});
+  // texts.json is aligned with the engine's rows: a source the engine leaves out (stale) is left out of it too.
+  let textLists=null;const joinTexts=()=>{texts=textLists.filter((x,k)=>!stale.includes(sources[k].id)).flat();};
+  Promise.all(sources.map(s=>ui(s,'texts.json',null))).then(t=>{if(t.some(x=>!x))return;textLists=t;joinTexts();if(results.length&&history.state?.view==='results')renderResults(),previewBest();}).catch(()=>{});
   corpus=await engine.load(()=>{},f=>{if(f>measured){measured=f;measuredAt=performance.now();}},
     {sources:installed(local),pairs:new Map(docs.filter(d=>d.twins?.length).map(d=>[d.id,new Set(d.twins)]))});
+  // 0.9.1: an installed source left out by the engine has its chip greyed (« à mettre à jour »); if no ticked source is left,
+  // this session searches every loaded one (the stored choice is kept for after the update).
+  stale=engine.state.stale.map(p=>p.stale);
+  if(stale.length){if(!scope.some(id=>corpus.sources.includes(id)))scope=[...corpus.sources];if(textLists)joinTexts();renderScope();}
   cdoc=new Map(corpus.documents.map(d=>[d.id,d]));
   clearInterval(ticker);store.set(STARTUP,Math.round(performance.now()-started));
-  setDot('ready',1,'Recherche prête · hors ligne');
+  setDot('ready',1,'Recherche prête · hors ligne'+(stale.length?' · '+SOURCES.filter(s=>stale.includes(s.id)).map(s=>s.label).join(', ')+' à mettre à jour (Réglages → Données)':''));
   pageRows=new Map();corpus.rows.forEach((r,i)=>{const k=r.doc+':'+r.page;if(!pageRows.has(k))pageRows.set(k,[]);pageRows.get(k).push(i);});
   // Version of the app · data date · search model, on one line (short month so it fits a 375 px phone).
   $('about').textContent='Version '+VERSION+(dataDate?' · données du '+fmtDate(dataDate,'short'):'')+' · Gemma + BM25';
