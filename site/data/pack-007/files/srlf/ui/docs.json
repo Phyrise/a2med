@@ -1,0 +1,1364 @@
+[
+{
+"id": 0,
+"title": "Choc Cardiogénique",
+"kind": "Recommandation",
+"year": 2026,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-RFE-2026-Choc-cardiogenique.pdf",
+"pages": 19,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/choc-cardiogenique-0 Texte de 15 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 14 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 19,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 358,
+"lang": "en",
+"twins": []
+},
+{
+"id": 1,
+"title": "RFE - Drépanocytose",
+"kind": "RFE",
+"year": 2025,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2025---RFE-Drepanocytose.pdf",
+"pages": 34,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rfe-drepanocytose Texte de 25 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 26 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 34,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 359,
+"lang": "en",
+"twins": []
+},
+{
+"id": 2,
+"title": "RFE - Nutrition",
+"kind": "RFE",
+"year": 2025,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2025---RFE-Nutrition.pdf",
+"pages": 26,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rfe-nutrition Texte de 18 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 18 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 26,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 360,
+"lang": "en",
+"twins": []
+},
+{
+"id": 3,
+"title": "Conférence de consensus SRLF (2023) - L'oxygénothérapie — Image",
+"kind": "Recommandation",
+"year": 2024,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-CC-Oxygen--RECO.pdf",
+"pages": 14,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/article/conference-consensus-srlf-2023-loxygenotherapie Texte de 12 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 10 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 14,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 361,
+"lang": "en",
+"twins": []
+},
+{
+"id": 4,
+"title": "Conférence de consensus SRLF (2023) - L'oxygénothérapie",
+"kind": "Recommandation",
+"year": 2024,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-CC-Oxygen--Review.pdf",
+"pages": 15,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/article/conference-consensus-srlf-2023-loxygenotherapie Texte de 15 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 10 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 15,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 362,
+"lang": "en",
+"twins": []
+},
+{
+"id": 5,
+"title": "Conférence de consensus SRLF (2022) - Nouveaux antibiotiques dans les infections à BGN en Réanimation — Image",
+"kind": "Recommandation",
+"year": 2023,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-CC-Nouveaux-Antibio--RECO.pdf",
+"pages": 12,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/article/conference-consensus-srlf-2022-nouveaux-antibiotiques-infections-bgn-reanimation Texte de 8 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 8 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 12,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 363,
+"lang": "en",
+"twins": []
+},
+{
+"id": 6,
+"title": "Conférence de consensus SRLF (2022) - Nouveaux antibiotiques dans les infections à BGN en Réanimation",
+"kind": "Recommandation",
+"year": 2023,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-CC-Nouveaux-Antibio--Review.pdf",
+"pages": 20,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/article/conference-consensus-srlf-2022-nouveaux-antibiotiques-infections-bgn-reanimation Texte de 18 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 12 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 20,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 364,
+"lang": "en",
+"twins": []
+},
+{
+"id": 7,
+"title": "RFE - Pneumothorax",
+"kind": "RFE",
+"year": 2023,
+"domain": "Réanimation",
+"source": "SRLF (avec SFAR, SFCTCV, SPLF…)",
+"filename": "SRLF-RFE-Pneumothorax.pdf",
+"pages": 25,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rfe-pneumothorax Texte de 19 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 19 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 25,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 365,
+"lang": "en",
+"twins": []
+},
+{
+"id": 8,
+"title": "Recommandations pour les visites des proches en réanimation",
+"kind": "Recommandation",
+"year": 2021,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-RecommandationsVisites-DesProchesEnREa_20210406_A4.pdf",
+"pages": 4,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/article/recommandations-visites-proches-reanimation Texte de 4 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 4,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 366,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 9,
+"title": "Recommandations pour les visites des proches en réanimation",
+"kind": "Recommandation",
+"year": 2021,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-RecommandationsVisites-DesProchesEnREa_20210406_A5.pdf",
+"pages": 2,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/article/recommandations-visites-proches-reanimation Texte de 2 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 2,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 367,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 10,
+"title": "RFE - Lésions de décubitus",
+"kind": "RFE",
+"year": 2021,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-RFE_lesions_du_decubitus_final.pdf",
+"pages": 36,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rfe-lesions-decubitus Texte de 36 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 36,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 368,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 11,
+"title": "EPP - Prise en charge du Syndrome de Détresse Respiratoire Aigüe (SDRA) de l’adulte à la phase initiale",
+"kind": "EPP",
+"year": 2020,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2020119-EPP-SDRA_0.pdf",
+"pages": 2,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/epp-prise-charge-du-syndrome-detresse-respiratoire-aigue-sdra-ladulte-phase-initiale Texte de 2 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 2,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 369,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 12,
+"title": "RFE - Diagnostic et Prise en Charge de l’Acidose Métabolique",
+"kind": "RFE",
+"year": 2020,
+"domain": "Réanimation",
+"source": "SRLF + SFMU",
+"filename": "SRLF-RFE067.pdf",
+"pages": 50,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rfe-diagnostic-prise-charge-lacidose-metabolique Texte de 50 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 50,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 370,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 13,
+"title": "RFE - Prise en charge du SDRA de l’adulte à la phase initale",
+"kind": "RFE",
+"year": 2020,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-RFE072.pdf",
+"pages": 34,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rfe-prise-charge-du-sdra-ladulte-phase-initale Texte de 33 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 34,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 371,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 14,
+"title": "RFE - Prise en charge des intoxications médicamenteuses et par drogues récréatives SRLF-SFMU",
+"kind": "RFE",
+"year": 2020,
+"domain": "Réanimation",
+"source": "SRLF + SFMU",
+"filename": "SRLF-RFE035_0.pdf",
+"pages": 71,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rfe-prise-charge-intoxications-medicamenteuses-drogues-recreatives-srlf-sfmu Texte de 71 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 1 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 71,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 372,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 15,
+"title": "EPP - Pneumopathies liées aux soins en réanimation",
+"kind": "EPP",
+"year": 2019,
+"domain": "Réanimation",
+"source": "SRLF (EPP tirée de la RFE SFAR–SRLF 2017)",
+"filename": "SRLF-EPP001.pdf",
+"pages": 3,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/epp-pneumopathies-liees-aux-soins-reanimation Texte de 3 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 3,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 373,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 16,
+"title": "RBP - Antibiothérapie des infections à entérobactéries et à Pseudomonas aeruginosa chez l’adulte: place des carbapénèmes et de leurs alternatives",
+"kind": "RBP",
+"year": 2019,
+"domain": "Réanimation",
+"source": "HAS + SPILF + SRLF",
+"filename": "SRLF-RFE011.pdf",
+"pages": 25,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rbp-antibiotherapie-infections-enterobacteries-pseudomonas-aeruginosa-ladulte-place Texte de 25 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 25,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 374,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 17,
+"title": "RFE - Gestion des abords vasculaires en réanimation",
+"kind": "RFE",
+"year": 2019,
+"domain": "Réanimation",
+"source": "SRLF (avec GFRUP, ADARPEF)",
+"filename": "SRLF-RFE012.pdf",
+"pages": 59,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rfe-gestion-abords-vasculaires-reanimation Texte de 41 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 1 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 59,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 375,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 18,
+"title": "RFE - Prise en charge de la mobilisation précoce en réanimation chez l'adulte et l'enfant",
+"kind": "RFE",
+"year": 2013,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2013_RFE_mobilisation.pdf",
+"pages": 12,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/media/rfe-prise-charge-mobilisation-precoce-reanimation-ladulte-lenfant Texte de 11 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 12,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 377,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 19,
+"title": "Pneumonies associées aux soins de réanimation (2017, RFE SFAR-SRLF)",
+"kind": "RFE",
+"year": 2017,
+"domain": "Réanimation",
+"source": "SFAR + SRLF",
+"filename": "SRLF-2017_09_RFE-commune_PNEUMONIES-ASSOCIEES-AUX-SOINS-DE-REANIMATION.pdf",
+"pages": 32,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2017/09/2017_09_RFE-commune_PNEUMONIES-ASSOCIEES-AUX-SOINS-DE-REANIMATION.pdf Texte de 19 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 31,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 379,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 96
+}
+]
+},
+{
+"id": 20,
+"title": "Image Légende Reco - 09/04/2020",
+"kind": "Recommandation",
+"year": 2020,
+"domain": "Réanimation — COVID-19",
+"source": "SRLF",
+"filename": "SRLF-20200410-Reco-Ethique-SRLF.pdf",
+"pages": 2,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2020/04/20200410-Reco-Ethique-SRLF.pdf Texte de 2 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 2,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 380,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 21,
+"title": "Prise en charge des hypertensions intra-crâniennes non tumorales par oedème cérébral en réanimation (1990, CC)",
+"kind": "Conférence de consensus",
+"year": 1990,
+"domain": "Réanimation",
+"source": "SRLF (7e conférence de consensus en réanimation et médecine d'urgence)",
+"filename": "SRLF-1990-CC-HypertensionIntracranienne.pdf",
+"pages": 3,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/1990-CC-HypertensionIntracranienne.pdf Texte de 3 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 3,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 387,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 22,
+"title": "Prévention de la maladie thrombo-embolique en réanimation (2001, RE)",
+"kind": "Recommandations d’experts",
+"year": 2001,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2001_recommandation_formalisee_d_experts_prevention_de_la_maladie_thrombo_embolique_en_reanimation.pdf",
+"pages": 6,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2001_recommandation_formalisee_d_experts_prevention_de_la_maladie_thrombo_embolique_en_reanimation.pdf Texte de 6 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 6,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 390,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 23,
+"title": "Infections liées aux cathéters veineux centraux en réanimation (2002, CC)",
+"kind": "Conférence de consensus",
+"year": 2002,
+"domain": "Réanimation",
+"source": "SRLF (conférence de consensus)",
+"filename": "SRLF-2002_infections_liees_aux_catheters_veineux_centraux_en_reanimayion_actualisation_2002_de_la_confere.pdf",
+"pages": 9,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2002_infections_liees_aux_catheters_veineux_centraux_en_reanimayion_actualisation_2002_de_la_conference_de_consensus-Paris_1994-.pdf Texte de 8 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 8,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 391,
+"lang": "?",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 193
+}
+]
+},
+{
+"id": 24,
+"title": "Challenges in end-of-life in the ICU (2003, CCI)",
+"kind": "Conférence de consensus internationale",
+"year": 2003,
+"domain": "Réanimation",
+"source": "Conférence internationale (ATS, ERS, ESICM, SCCM, SRLF)",
+"filename": "SRLF-2003_international_consensus_conference_challenges_in_end_of_life_in_the_ICU.pdf",
+"pages": 15,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2003_international_consensus_conference_challenges_in_end_of_life_in_the_ICU.pdf Texte de 15 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 13 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 15,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 392,
+"lang": "en",
+"twins": []
+},
+{
+"id": 25,
+"title": "Management of the critically ill patient with severe acute pancreatitis (2004)",
+"kind": "Recommandation",
+"year": 2004,
+"domain": "Réanimation",
+"source": "Conférence internationale (ATS, ERS, ESICM, SCCM, SRLF)",
+"filename": "SRLF-2004_Management_of_the_critically_ill_patient_with_severe_acute_pancreatitis.pdf",
+"pages": 13,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2004_Management_of_the_critically_ill_patient_with_severe_acute_pancreatitis.pdf Texte de 13 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 9 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 13,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 393,
+"lang": "en",
+"twins": []
+},
+{
+"id": 26,
+"title": "La protection rénale péri-opératoire (2004, CC)",
+"kind": "Conférence de consensus",
+"year": 2004,
+"domain": "Réanimation",
+"source": "SFAR (avec la Société de néphrologie, SRLF…)",
+"filename": "SRLF-2004_conference_de_consensus_commune_la_protection_renale_perioperatoire_texte_court.pdf",
+"pages": 14,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2004_conference_de_consensus_commune_la_protection_renale_perioperatoire_texte_court.pdf Texte de 14 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 14,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 395,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 27,
+"title": "Recommandations SFAR-SRLF d’organisation des unités de surveillance continue. (Février 2005, RE)",
+"kind": "Recommandation",
+"year": 2005,
+"domain": "Réanimation",
+"source": "SFAR + SRLF",
+"filename": "SRLF-200502-Recommandations_SFAR_SRLF-OrganisationDesUSC.pdf",
+"pages": 4,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/200502-Recommandations_SFAR_SRLF-OrganisationDesUSC.pdf Texte de 4 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 4,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 396,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 28,
+"title": "Prise en charge ventilatoire du SDRA de l’adulte et de l’enfant (2005)",
+"kind": "Recommandation",
+"year": 2005,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2005_recommandations_d_experts_SRLF_prise_en_charge_ventilatoire_du_SDRA_de_l_adulte_et_de_l_enfant-.pdf",
+"pages": 24,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2005_recommandations_d_experts_SRLF_prise_en_charge_ventilatoire_du_SDRA_de_l_adulte_et_de_l_enfant-nouveau_ne_exclus-.pdf Texte de 24 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 24,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 397,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 29,
+"title": "Prévention de la Maladie Thrombo-embolique Veineuse périopératoire et en obstétrique (2005, RPC)",
+"kind": "Recommandations pour la pratique clinique",
+"year": 2005,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2005_recommandations_pratiques_cliniques_prevention_de_la_maladie_thromboembolique_perioperatoire_et.pdf",
+"pages": 48,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2005_recommandations_pratiques_cliniques_prevention_de_la_maladie_thromboembolique_perioperatoire_et_en_obstetrique.pdf Texte de 48 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 46,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 398,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 30,
+"title": "Hemodynamic monitoring in shock and implications for management (2006)",
+"kind": "Recommandation",
+"year": 2006,
+"domain": "Réanimation",
+"source": "Conférence internationale (ESICM, ATS, SCCM, SRLF…)",
+"filename": "SRLF-2006_hemodynamic_monitoring_in_shock_and_implications_for_management.pdf",
+"pages": 16,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2006_hemodynamic_monitoring_in_shock_and_implications_for_management.pdf Texte de 16 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 13 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 16,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 400,
+"lang": "en",
+"twins": []
+},
+{
+"id": 31,
+"title": "Intoxications graves par médicaments et substances illicites en réanimation (2006, RFE)",
+"kind": "RFE",
+"year": 2006,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2006_recommandation_formalisees_d_experts_intoxications_graves_par_medicaments_et_substances_illicit.pdf",
+"pages": 11,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2006_recommandation_formalisees_d_experts_intoxications_graves_par_medicaments_et_substances_illicites_en_reanimation.pdf Texte de 11 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 11,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 401,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 32,
+"title": "Arrêt Cardiaque (RFE, 2007)",
+"kind": "Recommandation",
+"year": 2007,
+"domain": "Réanimation",
+"source": "SFAR + SRLF",
+"filename": "SRLF-2007_recommandations_formalisees_d_experts_arret_cardiaque_texte_court.pdf",
+"pages": 29,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2007_recommandations_formalisees_d_experts_arret_cardiaque_texte_court.pdf Texte de 28 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 29,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 403,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 169
+}
+]
+},
+{
+"id": 33,
+"title": "Stratégie d’antibiothérapie et prévention des résistances bactériennes en établissement de santé (2008)",
+"kind": "Recommandation",
+"year": 2008,
+"domain": "Réanimation",
+"source": "HAS",
+"filename": "SRLF-200804_HAS_rapport_complet_strategie_d_antibiotherapie_et_prevention_de_resistances_bacteriennes_en_.pdf",
+"pages": 110,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/200804_HAS_rapport_complet_strategie_d_antibiotherapie_et_prevention_de_resistances_bacteriennes_en_etablissement_de_sante_rapport_complet.pdf Texte de 109 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 110,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 404,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 34,
+"title": "Sécurisation des procédures à risques en réanimation (2008, Recommandations Formalisées d’Experts)",
+"kind": "Recommandation",
+"year": 2008,
+"domain": "Réanimation",
+"source": "SFAR + SRLF",
+"filename": "SRLF-2008_06_recommandation_formalisee_d_experts_la_securisation_des_procedures_a_risques_en_reanimation.pdf",
+"pages": 9,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2008_06_recommandation_formalisee_d_experts_la_securisation_des_procedures_a_risques_en_reanimation.pdf Texte de 9 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 9,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 405,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 160
+},
+{
+"paquet": "SFAR",
+"id": 161
+}
+]
+},
+{
+"id": 35,
+"title": "Indications de l’assistance circulatoire dans le traitement des arrêts cardiaques réfractaires (2008, RPC)",
+"kind": "Recommandations pour la pratique clinique",
+"year": 2008,
+"domain": "Réanimation",
+"source": "Sous l'égide DGS/DHOS (ministère), avec SRLF, SFAR…",
+"filename": "SRLF-2008_recommandations_sur_les_indications_de_l_assistance_circulatoire_dans_le_traitement_des_arrets_.pdf",
+"pages": 7,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2008_recommandations_sur_les_indications_de_l_assistance_circulatoire_dans_le_traitement_des_arrets_cardiaques_refractaires-1-.pdf Texte de 7 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 7,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 407,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 158
+}
+]
+},
+{
+"id": 36,
+"title": "Competence in critical care ultrasonography (2009)",
+"kind": "Recommandation",
+"year": 2009,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2009_Competence_Critical_Care_Ultrasonography.pdf",
+"pages": 11,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2009_Competence_Critical_Care_Ultrasonography.pdf Texte de 11 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 10 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 11,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 409,
+"lang": "en",
+"twins": []
+},
+{
+"id": 37,
+"title": "Prévention des infections nosocomiales en réanimation (2010, CCC)",
+"kind": "Conférence de consensus commune",
+"year": 2010,
+"domain": "Réanimation",
+"source": "SFAR + SRLF (5e conférence de consensus commune)",
+"filename": "SRLF-2010_01_5e_conference_de_consensus_prevention_des_infections_nosocomiales_en_reanimation_transmissio.pdf",
+"pages": 11,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2010_01_5e_conference_de_consensus_prevention_des_infections_nosocomiales_en_reanimation_transmission_croisee_et_nouveau_ne_exclus.pdf Texte de 10 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 11,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 410,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 159
+}
+]
+},
+{
+"id": 38,
+"title": "Prevention and Management of Acute Renal Failure in the ICU Patient (2010)",
+"kind": "Recommandation",
+"year": 2010,
+"domain": "Réanimation",
+"source": "Conférence internationale (ATS, ERS, ESICM, SCCM, SRLF)",
+"filename": "SRLF-2010_Prevention_Management_Acute_Renal_Failure.pdf",
+"pages": 28,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2010_Prevention_Management_Acute_Renal_Failure.pdf Texte de 19 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 19 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 28,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 411,
+"lang": "en",
+"twins": []
+},
+{
+"id": 39,
+"title": "Prise en charge des thrombopénies en réanimation (2011 , RFE)",
+"kind": "RFE",
+"year": 2011,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-20110812_SRLF_RFE_Thrombopenie_texte_court.pdf",
+"pages": 7,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/20110812_SRLF_RFE_Thrombopenie_texte_court.pdf Texte de 7 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 7,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 412,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 40,
+"title": "Nutrition artificielle en réanimation (2014, RFE)",
+"kind": "RFE",
+"year": 2014,
+"domain": "Réanimation",
+"source": "SFAR + SRLF (avec SFNEP)",
+"filename": "SRLF-2014_RFE_Nutrition_artificielle_en_reanimation.pdf",
+"pages": 19,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2014_RFE_Nutrition_artificielle_en_reanimation.pdf Texte de 19 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 19,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 413,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 123
+}
+]
+},
+{
+"id": 41,
+"title": "Prise en charge du choc cardiogénique de l’adulte (2014, RFE)",
+"kind": "RFE",
+"year": 2014,
+"domain": "Réanimation",
+"source": "SRLF (avec SFAR, SFC, SFCTCV, SFMU)",
+"filename": "SRLF-2014_RFE_choc_cardiogenique.pdf",
+"pages": 10,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/11/2014_RFE_choc_cardiogenique.pdf Texte de 10 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 10,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 414,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 42,
+"title": "Prise en charge des sujets en état de mort encéphalique en vue de prélèvement d’organes et de tissus (2005, RE)",
+"kind": "Recommandations d’experts",
+"year": 2005,
+"domain": "Réanimation",
+"source": "SRLF + SFAR + Agence de la biomédecine",
+"filename": "SRLF-2005_recommandations_d_experts_prise_en_charge_des_sujets_en_etat_de_mort_encephalique_en_vue_de-pre.pdf",
+"pages": 13,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/12/2005_recommandations_d_experts_prise_en_charge_des_sujets_en_etat_de_mort_encephalique_en_vue_de-prelevement_d_organes_et_de_tissus-1.pdf Texte de 13 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 13,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 415,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 178
+}
+]
+},
+{
+"id": 43,
+"title": "Recommandation de la SRLF concernant les limitations thérapeutiques (2008, RE)",
+"kind": "Recommandations d’experts",
+"year": 2008,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2008_-actualisation_des-recommandations_de_la_SRLF_concernant_les_limitations_therapeutiques.pdf",
+"pages": 24,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/12/2008_-actualisation_des-recommandations_de_la_SRLF_concernant_les_limitations_therapeutiques.pdf Texte de 24 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 24,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 416,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 44,
+"title": "Prise en charge de l’accident vasculaire cérébral par le réanimateur (2010, RFE)",
+"kind": "RFE",
+"year": 2010,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2010_recommandations_formalises_d_experts_prise_en_charge_de_l_accident_vasculaire_cerebral_chez_l_a.pdf",
+"pages": 8,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2015/12/2010_recommandations_formalises_d_experts_prise_en_charge_de_l_accident_vasculaire_cerebral_chez_l_adulte_et_l_enfant_par_le_reanimateur.pdf Texte de 8 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 8,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 417,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 45,
+"title": "Insuffisance rénale aigue en péri-opératoire et en réanimation (2015,RFE)",
+"kind": "RFE",
+"year": 2015,
+"domain": "Réanimation",
+"source": "SFAR + SRLF",
+"filename": "SRLF-2015_RFE_Insuffisance_Rnale_Aigue_en_priopratoire_et_en_Ranimation.pdf",
+"pages": 31,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/03/2015_RFE_Insuffisance_R%C3%A9nale_Aigue_en_p%C3%A9riop%C3%A9ratoire_et_en_R%C3%A9animation.pdf Texte de 30 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 31,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 418,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 113
+}
+]
+},
+{
+"id": 46,
+"title": "Prise en charge initiale par le réanimateur des hémorragies digestives de l’adulte",
+"kind": "Recommandation",
+"year": 2016,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2013_EPP_Prise_en_charge_initiale_par_le_ranimateur_des_hmorragies_digestives_de_ladulte.pdf",
+"pages": 6,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/04/2013_EPP_Prise_en_charge_initiale_par_le_r%C3%A9animateur_des_h%C3%A9morragies_digestives_de_ladulte.pdf Texte de 6 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 6,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 419,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 47,
+"title": "Prévention de l’hémorragie digestive haute de stress en réanimation",
+"kind": "Recommandation",
+"year": 2016,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2013_EPP_Prvention_de_lhmorragie_digestive_haute_de_stress_en_ranimation.pdf",
+"pages": 4,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/04/2013_EPP_Pr%C3%A9vention_de_lh%C3%A9morragie_digestive_haute_de_stress_en_r%C3%A9animation.pdf Texte de 4 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 4,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 420,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 48,
+"title": "Audit clinique pour l’évaluation du transport intra-hospitalier d’un patient de réanimation",
+"kind": "Recommandation",
+"year": 2016,
+"domain": "Réanimation",
+"source": "SRLF",
+"filename": "SRLF-2013_EPP_transport_intra-hospitalier_dun_patient_en_ranimation.pdf",
+"pages": 18,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/04/2013_EPP_transport_intra-hospitalier_dun_patient_en_r%C3%A9animation.pdf Texte de 18 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 18,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 421,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 49,
+"title": "Epuration extra-rénale en réanimation",
+"kind": "Recommandation",
+"year": 2016,
+"domain": "Réanimation",
+"source": "SRLF (avec SFAR, GFRUP…)",
+"filename": "SRLF-2014_EPP_puration_extra_rnale_en_Ranimation.pdf",
+"pages": 10,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/04/2014_EPP_%C3%A9puration_extra_r%C3%A9nale_en_R%C3%A9animation.pdf Texte de 10 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 10,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 422,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 50,
+"title": "Insuffisance rénale aiguë",
+"kind": "Recommandation",
+"year": 2016,
+"domain": "Réanimation",
+"source": "SRLF + SFAR (EPP tirée de la RFE 2015)",
+"filename": "SRLF-2016_EPP_Insuffisance_rnale_aigue.pdf",
+"pages": 3,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/05/2016_EPP_Insuffisance_r%C3%A9nale_aigue.pdf Texte de 3 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 3,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 423,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 51,
+"title": "Prise en charge du patient neutropénique en réanimation (Hors nouveaux-nés) (2016,RFE)",
+"kind": "RFE",
+"year": 2016,
+"domain": "Réanimation",
+"source": "SRLF (avec GFRUP, SFAR, SF2H, SFH, SPILF)",
+"filename": "SRLF-20160615_RFE_Neutropenie.pdf",
+"pages": 50,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/06/20160615_RFE_Neutropenie.pdf Texte de 50 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 50,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 424,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 52,
+"title": "Intubation – Extubation",
+"kind": "Recommandation",
+"year": 2016,
+"domain": "Réanimation",
+"source": "SRLF + SFAR (EPP tirée de la RFE 2016)",
+"filename": "SRLF-2016_EPP_intubation_extubation.pdf",
+"pages": 3,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/10/2016_EPP_intubation_extubation.pdf Texte de 3 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 3,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 425,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 53,
+"title": "Contrôle ciblé de la température en réanimation",
+"kind": "Recommandation",
+"year": 2016,
+"domain": "Réanimation",
+"source": "SRLF + SFAR",
+"filename": "SRLF-2016_EPP_CCT.pdf",
+"pages": 2,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/11/2016_EPP_CCT.pdf Texte de 2 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 2,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 426,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 102
+}
+]
+},
+{
+"id": 54,
+"title": "Contrôle ciblé de la température en réanimation (hors nouveaux-nés) (2016,RFE)",
+"kind": "RFE",
+"year": 2016,
+"domain": "Réanimation",
+"source": "SRLF + SFAR",
+"filename": "SRLF-20160218_controle-cible-temperature_RFE.pdf",
+"pages": 27,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2016/12/20160218_controle-cible-temperature_RFE.pdf Texte de 27 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 3 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 27,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 427,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 102
+}
+]
+},
+{
+"id": 55,
+"title": "Trachéotomie en réanimation",
+"kind": "Recommandation",
+"year": 2017,
+"domain": "Réanimation",
+"source": "SRLF + SFAR",
+"filename": "SRLF-2017_05_EPP_Trachotomie.pdf",
+"pages": 3,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2017/05/2017_05_EPP_Trach%C3%A9otomie.pdf Texte de 3 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 3,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 428,
+"lang": "fr",
+"twins": [
+{
+"paquet": "SFAR",
+"id": 101
+}
+]
+},
+{
+"id": 56,
+"title": "Prise en charge de l’encéphalite infectieuse chez l’adulte : les nouvelles recommandations (2017, RFE, SPILF)",
+"kind": "Recommandation",
+"year": 2017,
+"domain": "Réanimation",
+"source": "SPILF (avec SFAR, SRLF, SFN…)",
+"filename": "SRLF-2017_RFE_SPILF_Encphalite.pdf",
+"pages": 16,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2017/05/2017_RFE_SPILF_Enc%C3%A9phalite.pdf Texte de 16 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 8 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 16,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 429,
+"lang": "en",
+"twins": []
+},
+{
+"id": 57,
+"title": "RFE Etat de mal épileptique SRLF SFMU (2018)",
+"kind": "RFE",
+"year": 2018,
+"domain": "Réanimation",
+"source": "SRLF + SFMU (avec GFRUP)",
+"filename": "SRLF-22062018_RFE-Etat-de-mal-pileptique-SRLF-SFMU.pdf",
+"pages": 46,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2018/06/22062018_RFE-Etat-de-mal-%C3%A9pileptique-SRLF-SFMU.pdf Texte de 46 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next."
+},
+"changed_pages": [],
+"indexed_pages": 46,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 430,
+"lang": "fr",
+"twins": []
+},
+{
+"id": 58,
+"title": "Planning and provision of ECMO services for severe ARDS during the COVID-19 pandemic and other outbreaks of emerging infectious diseases",
+"kind": "Recommandation",
+"year": 2020,
+"domain": "Réanimation — COVID-19",
+"source": "ELSO (international)",
+"filename": "SRLF-LRM-ECMO-COVID-paper.pdf",
+"pages": 9,
+"status": {
+"level": "info",
+"label": "Paquet SRLF",
+"detail": "Collecte privée SRLF du 2026-10-26 ; fiche : https://www.srlf.org/wp-content/uploads/2020/03/LRM-ECMO-COVID-paper.pdf Texte de 9 page(s) (tableaux, figures) transcrit par Qwen3.8 Flash Next. 7 page(s) en anglais traduite(s) en français par Qwen3.8 Flash Next, pour la recherche seulement."
+},
+"changed_pages": [],
+"indexed_pages": 9,
+"in_search": true,
+"paquet": "SRLF",
+"ref": 431,
+"lang": "en",
+"twins": []
+}
+]

@@ -1,0 +1,24 @@
+{
+ "pack_date": "2026-10-28",
+ "paquet": "SFAR",
+ "collected_at": "2026-10-26",
+ "collect_scope": "site de la SFAR (collecte privée, watch/collect.py)",
+ "labels": "etiquettes-20261028.json",
+ "translation": {
+  "pages": 80,
+  "model": "Qwen3.8 Flash Next",
+  "use": "vecteurs FR : mots sur page + traduction, vecteurs sur la traduction"
+ },
+ "search": {
+  "model": "embeddinggemma-300m model_q4 (Gemma 1 Q4)",
+  "dimensions": 512,
+  "lexical": "BM25",
+  "fusion": "RRF 1/(61+r), top 50, unchanged"
+ },
+ "corpus_fingerprint": "6d7a00d5644ed206ad858078ca75aa78e57d1cccb2601f469b2f695b2617644f",
+ "provenance": [
+  "pack-test-2026-10-27-vlm-tout",
+  "etiquettes-20261028.json",
+  "traduction/journal.jsonl"
+ ]
+}

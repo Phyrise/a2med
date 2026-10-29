@@ -6,10 +6,10 @@
 // (web-bridge.js, pdf.js), the interface the former Android app offered.
 import * as engine from './engine.js';
 import {BASE,NS} from './config.js';
-import {localManifest} from './data.js';
+import {localManifest,installed,dateOf} from './data.js';
+import {SOURCES,installedSources,sourceOf} from './sources.js';
 
-const VERSION='0.8.6';
-const DATA=BASE+'pack/ui/';
+const VERSION='0.9.0';
 
 // ---------- small helpers ----------
 const $=id=>document.getElementById(id);
@@ -71,12 +71,14 @@ let antiSet=null;const antiWords=()=>antiSet?.size?antiSet:antiSet=new Set(lexic
 
 // ---------- state ----------
 let corpus=null,docs=[],terms=[],termsNorm=[],vocab=[],vocabSet=new Set(),texts=null,pageRows=null,info=null;
+// Sources (0.9): installed sources (sources.js), the ones searched, documents by id (ids offset per source).
+let sources=[],scope=[],docById=new Map(),cdoc=new Map();
 let pendingQuery=null,busy=false,query='',results=[],lexicalHits=0,cur=null,lastQuestionView='home';
 const RECENT=NS+'-recent',SAVED=NS+'-pins',SORT=NS+'-doc-sort';  // same keys as 0.3 for recent searches and saved pages; texts.json is aligned with corpus.rows
 
 // ---------- labels ----------
-const docOf=i=>docs[i]||{title:corpus?.documents[i]?.source||'Document',kind:'',year:null,source:'',pages:corpus?.documents[i]?.pages||1,status:null,changed_pages:[],domain:''};
-const isSlides=i=>corpus?corpus.documents[i]?.source_type==='pptx':docs[i]?.kind==='Diaporama';
+const docOf=i=>docById.get(i)||{title:cdoc.get(i)?.source||'Document',kind:'',year:null,source:'',pages:cdoc.get(i)?.pages||1,status:null,changed_pages:[],domain:''};
+const isSlides=i=>corpus?cdoc.get(i)?.source_type==='pptx':docById.get(i)?.kind==='Diaporama';
 const pageLabel=(doc,page)=>(isSlides(doc)?'Diapo ':'p. ')+(page+1);
 // The year leads every document line, in bold: which recommendation is the recent one must be seen at a glance.
 const withYear=(d,rest)=>{const t=rest.filter(Boolean).join(' · ');return d.year?[el('b',{class:'yr'},String(d.year)),t?' · '+t:'']:[t];};
@@ -339,7 +341,7 @@ async function search(q){
   if(history.state?.view==='results')apply({view:'results'});else navigate({view:'results'},'push');
   $('skeleton').hidden=false;$('best').hidden=true;$('others').replaceChildren();$('others-title').hidden=true;$('after').hidden=true;$('spell').hidden=true;$('rsum').textContent='Recherche…';
   let r,err;
-  try{r=await engine.search(q,5);}catch(e){err=e;}
+  try{r=await engine.search(q,5,scope);}catch(e){err=e;}
   busy=false;$('go').classList.remove('busy');
   if(nextQuery!=null){const n=nextQuery;nextQuery=null;return search(n);}
   $('skeleton').hidden=true;
@@ -355,6 +357,18 @@ async function search(q){
   return {question:q,times:r.times,first_page_rendered:shown,top5:mine.map(p=>p.row.pid)};  // returned to the dev console only, not stored
 }
 function remember(q){const r=store.get(RECENT,[]).filter(x=>x.q!==q);r.unshift({q,at:Date.now()});store.set(RECENT,r.slice(0,12));}
+
+// ---------- sources (0.9) ----------
+// Under the field, one chip per source: an installed one can be ticked (at least one stays on), the others are greyed and say
+// where to install them. Touching one while results are shown searches again in the new choice.
+const SCOPE=NS+'-scope';
+function renderScope(){const box=$('scope');box.hidden=!sources.length;if(box.hidden)return;
+  box.replaceChildren(el('span',{class:'scope-label'},'Chercher dans'),...SOURCES.map(s=>!sources.includes(s)
+    ?el('button',{type:'button',class:'scope-chip','aria-disabled':'true',title:s.name+' : non installée',onclick:()=>toast(`Installez ${s.label} (Réglages → Données) pour chercher dedans`)},s.label)
+    :el('button',{type:'button',class:'scope-chip','aria-pressed':String(scope.includes(s.id)),title:s.name,
+    onclick:()=>{const on=scope.includes(s.id);if(on&&scope.length===1){toast('Gardez au moins une source');return;}
+      scope=SOURCES.filter(x=>x.id===s.id?!on:scope.includes(x.id)).map(x=>x.id);store.set(SCOPE,{on:scope,known:sources.map(x=>x.id)});renderScope();
+      if(history.state?.view==='results'&&query)search(query);}},s.label)));}
 
 // ---------- results ----------
 function statusBadge(doc){const st=statusOf(doc);return st?el('span',{class:'badge '+st.level},st.label):null;}
@@ -379,7 +393,7 @@ function renderResults(){
   const qt=queryTerms(query),needs=needsIn(query),[top,...rest]=results,d=docOf(top.row.doc);
   const text=textOfPage(top.row.doc,top.row.page),slides=isSlides(top.row.doc),lines=keyLines(text,qt,needs,slides?3:2,slides),snip=!lines.length&&text?bestSnippet(text,qt,240):'';
   $('best').replaceChildren(...[
-    el('div',{class:'kicker'},'Meilleur résultat'),
+    el('div',{class:'kicker'},'Meilleur résultat',el('span',{class:'src-tag'},d.paquet)),
     el('button',{type:'button',class:'best-head',onclick:()=>openHit(0)},el('strong',{},d.title),el('span',{class:'meta'},withYear(d,[d.kind,d.source]))),
     statusBadge(top.row.doc),
     lines.length?el('ul',{class:'keylines'},...lines.map(l=>el('li',{},rich(l,qt)))):snip?el('p',{class:'snip'},rich(snip,qt)):!texts?el('p',{class:'snip muted'},'Texte de la page en cours de chargement…'):null,
@@ -395,7 +409,7 @@ function renderResults(){
   const row=(p,i)=>{const dd=docOf(p.row.doc),bit=shortBit(textOfPage(p.row.doc,p.row.page),qt,isSlides(p.row.doc)),st=statusOf(p.row.doc);
     return el('button',{type:'button',class:'row one',onclick:()=>openHit(i)},
       el('span',{class:'n'},String(i+1)),
-      el('span',{class:'body'},el('strong',{},dd.title),el('span',{class:'meta'},st?.level==='warn'?el('span',{class:'warn-s',title:st.label},'⚠ '):'',el('span',{class:'pg'},pageLabel(p.row.doc,p.row.page)),bit?[' · ',el('span',{class:'bit'},rich(bit,qt))]:'')),
+      el('span',{class:'body'},el('strong',{},dd.title),el('span',{class:'meta'},st?.level==='warn'?el('span',{class:'warn-s',title:st.label},'⚠ '):'',el('span',{class:'src-tag'},dd.paquet),el('span',{class:'pg'},pageLabel(p.row.doc,p.row.page)),bit?[' · ',el('span',{class:'bit'},rich(bit,qt))]:'')),
       icon('chev'));};
   $('others').replaceChildren(...rest.slice(0,2).map((p,k)=>row(p,k+1)));
   const more=rest.slice(2);$('more').hidden=!more.length;$('more').open=false;
@@ -672,7 +686,10 @@ function renderHome(){
 // ---------- Documents tab: Mes pages, Nouveautés, then every document sorted by section, title or date ----------
 let docSort=['section','title','date'].includes(store.get(SORT,'section'))?store.get(SORT,'section'):'section',showAllSaved=false;
 const openSections=new Set(),NEW='\u0000new';  // open sections, this session only: all closed at launch
-const savedRow=p=>{const d=docOf(p.doc);return el('button',{type:'button',class:'row',onclick:()=>openPage(p.doc,p.page,null)},icon('save'),el('span',{class:'body'},el('strong',{},d.title),el('span',{class:'meta'},metaLine(p.doc,p.page,false))),icon('chev'));};
+const savedRow=p=>{const s=sourceOf(p.doc);if(sources.length&&!sources.includes(s)){   // a page of a source erased since: kept, opened again once the source is back
+    return el('button',{type:'button',class:'row',onclick:()=>toast(`Installez ${s.label} (Réglages → Données) pour ouvrir cette page`)},icon('save'),
+      el('span',{class:'body'},el('strong',{},`Page ${s.label}`),el('span',{class:'meta'},`p. ${p.page+1} · source non installée`)),icon('chev'));}
+  const d=docOf(p.doc);return el('button',{type:'button',class:'row',onclick:()=>openPage(p.doc,p.page,null)},icon('save'),el('span',{class:'body'},el('strong',{},d.title),el('span',{class:'meta'},metaLine(p.doc,p.page,false))),icon('chev'));};
 const newTag=id=>info?.added?.includes(id)?'Nouveau':info?.updated?.includes(id)?'Mis à jour':null;
 function docRow(d,{tag=null,showDomain=false,note=null}={}){
   const meta=withYear(d,[d.source,d.kind,d.pages+(d.kind==='Diaporama'?' diapos':' p.')]);
@@ -813,17 +830,36 @@ const tick=()=>{const now=performance.now();shown=Math.max(shown,.9*Math.min(1,(
 $('status').onclick=()=>toast(dot.msg);
 const ticker=setInterval(tick,120);
 try{
-  // pack-info.json: SPILF check date and the pack's new/updated documents (written into pack/ui/ by pipeline/refresh.py).
-  [docs,terms,info,lexicon]=await Promise.all([fetch(DATA+'docs.json').then(r=>r.ok?r.json():[]).catch(()=>[]),fetch(DATA+'terms.json').then(r=>r.ok?r.json():[]).catch(()=>[]),
-    fetch(DATA+'pack-info.json').then(r=>r.ok?r.json():null).catch(()=>null),fetch(BASE+'lexicon.json').then(r=>r.ok?r.json():[]).catch(()=>[])]);
-  dataDate=(await localManifest().catch(()=>null))?.date||info?.pack_date||null;
+  // Sources (0.9): documents, words and page texts of every installed source, in the order of sources.js (the
+  // engine joins their rows in the same order); ids of the SFAR and SRLF documents offset. pack-info.json (SPILF check date and
+  // new/updated documents, written into pack/ui/ by pipeline/refresh.py) is the SPILF pack's.
+  const local=await localManifest().catch(()=>null);sources=installedSources(installed(local));
+  const ui=(s,f,empty)=>fetch(BASE+'pack/'+s.prefix+'ui/'+f).then(r=>r.ok?r.json():empty).catch(()=>empty);
+  let lists,termLists;
+  [lists,termLists,info,lexicon]=await Promise.all([Promise.all(sources.map(s=>ui(s,'docs.json',[]))),Promise.all(sources.map(s=>ui(s,'terms.json',[]))),
+    ui(sources[0],'pack-info.json',null),fetch(BASE+'lexicon.json').then(r=>r.ok?r.json():[]).catch(()=>[])]);
+  const EN={level:'info',label:'En anglais',detail:'Texte publié en anglais. La recherche lit aussi une traduction française de ses pages (Qwen3.8 Flash Next) ; la page montrée est l’originale.'};
+  docs=sources.flatMap((s,k)=>lists[k].map(d=>s.offset?{...d,id:d.id+s.offset,paquet:s.label,status:d.lang==='en'?EN:null,
+    twins:(d.twins||[]).map(t=>t.id+SOURCES.find(x=>x.label===t.paquet).offset)}:{...d,paquet:s.label}));
+  docById=new Map(docs.map(d=>[d.id,d]));
+  if(sources.length>1){const n=new Map();for(const l of termLists)for(const [t,c] of l)n.set(t,(n.get(t)||0)+c);terms=[...n].sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:1));}
+  else terms=termLists[0];
+  // Ticked: the sources left ticked, and any source installed since the chips were last shown (all of them at first). What is
+  // shown is stored at once: a source ticked because it was the only one stays ticked when others come.
+  const was=store.get(SCOPE,null),known=was?.known||[];
+  scope=sources.map(s=>s.id).filter(id=>was?.on?.includes(id)||!known.includes(id));if(!scope.length)scope=sources.map(s=>s.id);
+  store.set(SCOPE,{on:scope,known:sources.map(x=>x.id)});renderScope();
+  if(sources.length>1)document.querySelector('.notice a.src')?.after(' · '+sources.slice(1).map(s=>s.name).join(' · '));
+  dataDate=dateOf(local)||info?.pack_date||null;
   renderFreshness();if(history.state?.view==='docs')renderDocs();
   termsNorm=terms.map(t=>norm(t[0]));vocabSet=new Set(termsNorm.flatMap(t=>t.split(/[^\p{L}]+/u)).filter(Boolean));vocab=terms.filter(t=>!t[0].includes(' ')&&t[0].length>=4).map(t=>[t[0],norm(t[0]),t[1]]);
   if(history.state?.view==='home')renderHome();
   // Page texts (key lines, reader): read while the model loads in its worker, so that the ≈ 0.7 s of reading them no longer
   // falls just after « Recherche prête » (0.8).
-  fetch(DATA+'texts.json').then(r=>r.ok?r.json():null).then(t=>{texts=t;if(results.length&&history.state?.view==='results')renderResults(),previewBest();}).catch(()=>{});
-  corpus=await engine.load(()=>{},f=>{if(f>measured){measured=f;measuredAt=performance.now();}});
+  Promise.all(sources.map(s=>ui(s,'texts.json',null))).then(t=>{if(t.some(x=>!x))return;texts=t.flat();if(results.length&&history.state?.view==='results')renderResults(),previewBest();}).catch(()=>{});
+  corpus=await engine.load(()=>{},f=>{if(f>measured){measured=f;measuredAt=performance.now();}},
+    {sources:installed(local),pairs:new Map(docs.filter(d=>d.twins?.length).map(d=>[d.id,new Set(d.twins)]))});
+  cdoc=new Map(corpus.documents.map(d=>[d.id,d]));
   clearInterval(ticker);store.set(STARTUP,Math.round(performance.now()-started));
   setDot('ready',1,'Recherche prête · hors ligne');
   pageRows=new Map();corpus.rows.forEach((r,i)=>{const k=r.doc+':'+r.page;if(!pageRows.has(k))pageRows.set(k,[]);pageRows.get(k).push(i);});

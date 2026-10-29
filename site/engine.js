@@ -5,34 +5,39 @@ import {BASE,NS} from './config.js';
 import {VERSION as RANKING,lexicalScores,order,fuse,pageResults} from './retrieval.mjs';
 import {fixedTokens} from './tokenize.mjs';
 import {denseScoresTC} from './dense_tc.mjs';
+import {installedSources} from './sources.js';
 
 export const MODEL={id:'embeddinggemma-300m-q4',label:'Gemma 1 Q4 512D',full:768,dims:512,dtype:'q4',
   queryPrefix:'task: search result | query: '};
-const FINGERPRINT='45e2c39e21ac7764151a9d98b67ca6aa6302cc2282acd0b9dacb44b38fb01e67';
 // Dense index TC_i8 (since 0.7): one int8 vector per row plus vectors for the end of long rows; a row's score = the max over its
 // vectors × their scale (dense_tc.mjs). The 0.6 index (vectors-gemma-q4-512.bin) is no longer read since 0.8.6.
-const TC_FILES=['vectors-tc-i8.bin','vectors-tc-scale.bin','vectors-tc-rows.bin'].map(f=>BASE+'pack/'+f);
-let tc=null;
+const TC_FILES=['vectors-tc-i8.bin','vectors-tc-scale.bin','vectors-tc-rows.bin'];
+// Sources (0.9, 29/10/2026): one pack per installed source (sources.js), each with its own BM25 statistics and
+// vectors. `corpus` joins their rows (SPILF first, document ids offset), so the app sees one corpus. A search over several sources is
+// one RRF over their rows: dense scores side by side (same model), BM25 scores side by side, each from its own source's index
+// (mode « fusion-index-separes » of collecte/vlm-spilf/sources, 27/10). A search over the SPILF alone is the one of 0.8.6.
+let packs=[],twins=new Map();
 
 let Tensor;  // Transformers.js is loaded on this page only if the worker cannot start
 
-let corpus,bm,tokenizer,model;
+let corpus,tokenizer,model;
 export const state={ready:false,corpus:null,bm:null,startup:null};
 
 // progress(f): 0…1 at each step that can be measured (files read, model weights read); the time between is estimated by app.js.
-export async function load(status=()=>{},progress=()=>{}){
+// sources: ids of the installed optional sources; pairs: Map(document id → ids of the same recommendation in another source).
+export async function load(status=()=>{},progress=()=>{},{sources=[],pairs=new Map()}={}){
   const t0=performance.now();
   status('Chargement des documents…');
   // The worker loads the model while this page reads the documents (both took turns on one thread before).
   let modelMs=0;const inWorker=loadWorker(progress).then(()=>{modelMs=performance.now()-t0;},
     e=>{worker?.terminate();worker=null;state.worker_error=String(e?.message||e);});
-  [corpus,bm]=await Promise.all([
-    fetch(BASE+'pack/corpus-meta.json').then(r=>{if(!r.ok)throw Error('Corpus non installé');return r.json();}),
-    fetch(BASE+'pack/bm25.json').then(r=>r.json()),
-    loadVectors()]);
-  if(corpus.fingerprint!==FINGERPRINT)throw Error('Corpus différent de celui de l’index');progress(.15);
-  state.corpus=corpus;state.bm=bm;
-  if(tc.scale.length!==corpus.n+tc.rows.length||tc.i8.length!==tc.scale.length*MODEL.dims)throw Error('Index vectoriel incomplet');
+  packs=await Promise.all(installedSources(sources).map(loadPack));twins=pairs;progress(.15);
+  let first=0;const rows=[],documents=[];
+  for(const p of packs){p.first=first;first+=p.corpus.n;const o=p.source.offset;
+    for(const r of p.corpus.rows)rows.push(o?{...r,doc:r.doc==null?r.doc:r.doc+o}:r);
+    for(const d of p.corpus.documents)documents.push(o?{...d,id:d.id+o}:d);}
+  corpus={n:rows.length,rows,documents,fingerprint:packs[0].corpus.fingerprint,sources:packs.map(p=>p.source.id)};
+  state.corpus=corpus;state.bm=packs[0].bm;
   status('Préparation de la recherche…');const t1=performance.now();
   await inWorker;
   if(!worker){await loadHere(progress);modelMs=performance.now()-t1;}
@@ -91,20 +96,36 @@ export async function encode(text){
   const n=Math.hypot(...v);if(!Number.isFinite(n)||n<1e-8)throw Error('Invalid norm');
   return truncate(Float32Array.from(v,x=>x/n),MODEL.dims);
 }
+// One source's pack under pack/<prefix>: corpus (fingerprint checked), BM25 index, TC_i8 vectors.
 // Data installed before 0.7 (pack-005) has no TC_i8 files: the update offered in the app brings them.
-async function loadVectors(){
-  const r=await Promise.all(TC_FILES.map(u=>fetch(u)));if(!r.every(x=>x.ok))throw Error('index absent, mettez à jour les données (Réglages)');
-  const [a,b,c]=await Promise.all(r.map(x=>x.arrayBuffer()));tc={i8:new Int8Array(a),scale:new Float32Array(b),rows:new Int32Array(c)};
+async function loadPack(source){
+  const at=BASE+'pack/'+source.prefix,r=await Promise.all(TC_FILES.map(f=>fetch(at+f)));
+  if(!r.every(x=>x.ok))throw Error('index absent, mettez à jour les données (Réglages)');
+  const [c,bm,a,b,e]=await Promise.all([fetch(at+'corpus-meta.json').then(x=>{if(!x.ok)throw Error('Corpus non installé ('+source.label+')');return x.json();}),
+    fetch(at+'bm25.json').then(x=>x.json()),...r.map(x=>x.arrayBuffer())]);
+  if(c.fingerprint!==source.fingerprint)throw Error('Corpus différent de celui de l’index ('+source.label+')');
+  const tc={i8:new Int8Array(a),scale:new Float32Array(b),rows:new Int32Array(e)};
+  if(tc.scale.length!==c.n+tc.rows.length||tc.i8.length!==tc.scale.length*MODEL.dims)throw Error('Index vectoriel incomplet ('+source.label+')');
+  return {source,corpus:c,bm,tc};
 }
-const denseOrder=(q,dims)=>order(denseScoresTC(q,tc.i8,tc.scale,tc.rows,corpus.n,dims),corpus);
 
-export async function search(q,limit=5){
-  const times={},begin=performance.now();
-  let t=performance.now();const lexical=order(lexicalScores(q,bm),corpus,true);times.bm25_ms=performance.now()-t;
+// scope: ids of the sources to search (default all installed). Rows of the other sources get no score, so they are left out.
+export async function search(q,limit=5,scope=null){
+  const times={},begin=performance.now(),on=packs.filter(p=>!scope||scope.includes(p.source.id));
+  if(!on.length)throw Error('Aucune source choisie');
+  let t=performance.now();const lex=new Float64Array(corpus.n).fill(NaN);
+  for(const p of on)lex.set(lexicalScores(q,p.bm),p.first);
+  const lexical=order(lex,corpus,true);times.bm25_ms=performance.now()-t;
   t=performance.now();const emb=await encode(q);times.encode_ms=performance.now()-t;
-  t=performance.now();const dense=denseOrder(emb,MODEL.dims);times.dense_ms=performance.now()-t;
-  const pages=pageResults(fuse([[dense],[lexical]]),corpus,limit);times.retrieval_ms=performance.now()-begin;
-  return {pages,times,lexicalHits:lexical.length,ranking:RANKING,model:MODEL.label};
+  t=performance.now();const den=new Float32Array(corpus.n).fill(NaN);
+  for(const p of on)den.set(denseScoresTC(emb,p.tc.i8,p.tc.scale,p.tc.rows,p.corpus.n,MODEL.dims),p.first);
+  const dense=order(den,corpus);times.dense_ms=performance.now()-t;
+  const pages=withoutTwins(pageResults(fuse([[dense],[lexical]]),corpus,limit+10)).slice(0,limit);times.retrieval_ms=performance.now()-begin;
+  return {pages,times,lexicalHits:lexical.length,ranking:RANKING,model:MODEL.label,sources:on.map(p=>p.source.id)};
 }
+// The same recommendation published by two societies (SFAR and SRLF sites): only the document ranked first is shown.
+function withoutTwins(pages){const shown=new Set();
+  return pages.filter(p=>{const d=p.row.doc;if([...(twins.get(d)||[])].some(x=>shown.has(x)))return false;shown.add(d);return true;});}
 // Index words that exist in the documents (accented and unaccented forms are both indexed).
-export const known=w=>Boolean(bm?.postings[w.toLowerCase()]||bm?.postings[w.toLowerCase().normalize('NFD').replace(/\p{Mn}/gu,'')]);
+const inIndex=w=>packs.some(p=>p.bm.postings[w]);
+export const known=w=>inIndex(w.toLowerCase())||inIndex(w.toLowerCase().normalize('NFD').replace(/\p{Mn}/gu,''));

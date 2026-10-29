@@ -24,6 +24,8 @@
     <button type="button" id="clear" class="icon small" aria-label="Effacer" hidden><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     <button id="go" class="go" aria-label="Rechercher"><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
   </form>
+  <!-- Sources (0.9): one chip per source to search (SPILF, SFAR, SRLF); a source not installed is greyed. -->
+  <div id="scope" class="scope" role="group" aria-label="Sources de la recherche" hidden></div>
   <!-- One tap says what is needed: the word is added to the search (touched again: removed); with a subject, the search runs. -->
   <div id="needs" class="needs" role="group" aria-label="Préciser ce que vous cherchez"></div>
   <!-- Precisions of the need just touched (Allergie → pénicilline, bêta-lactamines…, or anything typed). -->

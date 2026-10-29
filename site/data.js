@@ -10,7 +10,18 @@ const DATA=NS+'-data',STAGE=NS+'-staging',LOCAL=PACK+'.manifest.json';
 const TYPES={json:'application/json',pdf:'application/pdf',txt:'text/plain'};
 const type=path=>TYPES[path.split('.').pop()]||'application/octet-stream';
 const hex=buf=>[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
-const files=m=>new Map((m?.blocks||[]).flatMap(b=>b.files.map(f=>[f.path,{...f,block:b.id}])));
+// Sources (0.9): a block with `optional` (the SFAR and SRLF packages) is wanted only when chosen; the chosen ones
+// are written into the local manifest (`installed`) once downloaded.
+const files=(m,chosen)=>new Map((m?.blocks||[]).filter(b=>!b.optional||chosen.includes(b.id)).flatMap(b=>b.files.map(f=>[f.path,{...f,block:b.id}])));
+export const installed=m=>m?.installed||[];
+// The date of the data: the day the sources were last checked on the societies' sites (`checked`, else the date of the pack), the
+// earliest of the SPILF pack (m) and of the packages in `ids`: every installed source matched its site on that day.
+export const dateOf=(m,ids=installed(m))=>[m,...(m?.blocks||[]).filter(b=>b.optional&&ids.includes(b.id))].map(x=>x?.checked||x?.date).filter(Boolean).sort()[0]||null;
+// The host's manifest with the same files as those installed (a check of the sites found nothing new, only the dates moved):
+// it becomes the local one as is, nothing to download.
+export async function adopt(local,remote){
+  await (await caches.open(DATA)).put(LOCAL,new Response(JSON.stringify({...remote,installed:installed(local)}),{headers:{'Content-Type':'application/json'}}));
+}
 export const mb=n=>n>=1e9?(n/1e9).toFixed(1).replace('.',',')+' Go':Math.max(1,Math.round(n/1e6))+' Mo';
 
 export async function localManifest(){const r=await (await caches.open(DATA)).match(LOCAL);return r?r.json():null;}
@@ -24,15 +35,16 @@ async function stored(cache){ // path -> sha256 of every data file in this cache
   return out;
 }
 
-// What must be fetched to go from the installed data to `remote` (files evicted by the browser count as missing).
-export async function plan(local,remote){
-  const present=await stored(await caches.open(DATA)),want=files(remote||local);
+// What must be fetched to go from the installed data to `remote` (files evicted by the browser count as missing), with the
+// optional sources `chosen` (default: those installed); the files of a source no longer chosen are dropped.
+export async function plan(local,remote,chosen=installed(local)){
+  const present=await stored(await caches.open(DATA)),want=files(remote||local,chosen);
   const get=[...want.values()].filter(f=>present.get(f.path)!==f.sha256);
   const keep=new Set([...want.keys(),...[...want.values()].flatMap(f=>(f.parts||[]).map(x=>x.path))]);   // parts stored on their own
   const drop=[...present.keys()].filter(p=>!keep.has(p));
   const blocks={};for(const f of get){const b=blocks[f.block]||={files:0,bytes:0};b.files++;b.bytes+=f.bytes;}
-  const complete=Boolean(local)&&[...files(local).values()].every(f=>present.get(f.path)===f.sha256); // installed set usable as is
-  return {get,drop,blocks,bytes:get.reduce((s,f)=>s+f.bytes,0),complete};
+  const complete=Boolean(local)&&[...files(local,installed(local)).values()].every(f=>present.get(f.path)===f.sha256); // installed set usable as is
+  return {get,drop,blocks,bytes:get.reduce((s,f)=>s+f.bytes,0),complete,chosen};
 }
 
 // One file (or one part) as one stream. A file over GitHub's 50 MB warning (the model) is published in parts (f.parts, in
@@ -72,7 +84,7 @@ export async function install(p,remote,progress=()=>{}){
   if(staged)for(const f of p.get){for(const x of f.parts||[]){const key=PACK+x.path;await data.put(key,await target.match(key));}
     const key=PACK+f.path;await data.put(key,await target.match(key));}
   for(const path of p.drop)await data.delete(PACK+path);
-  await data.put(LOCAL,new Response(JSON.stringify(remote),{headers:{'Content-Type':'application/json'}}));
+  await data.put(LOCAL,new Response(JSON.stringify({...remote,installed:p.chosen}),{headers:{'Content-Type':'application/json'}}));
   if(staged)await caches.delete(STAGE);times.commit_ms=performance.now()-t;
   return times;
 }

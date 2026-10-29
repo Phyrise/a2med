@@ -322,3 +322,14 @@ mark b.num,b.num mark{color:inherit}
 .tile{min-height:46px;padding:9px 12px;font-size:.93rem}
 .open-page .mini.wide{width:84px;height:47px}
 .open-page .mini.wide img{object-fit:contain;background:#fff}
+
+/* Sources (0.9, 29/10/2026): source chips under the field, source tag on results */
+.scope{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px -12px 0;padding:0 12px 2px}
+.scope::-webkit-scrollbar{display:none}
+.scope-label{flex:none;font-size:.8rem;color:var(--muted);margin-right:2px}
+.scope-chip{flex:none;white-space:nowrap;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:0 12px;min-height:34px;font-size:.84rem;font-weight:600;color:var(--muted)}
+.scope-chip[aria-pressed=true]{background:var(--info-soft);border-color:var(--info);color:var(--info)}
+.scope-chip[aria-pressed=true]::before{content:"✓ "}
+.scope-chip[aria-disabled=true]{border-style:dashed;background:var(--surface-2);opacity:.55;font-weight:500}
+.src-tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.02em;color:var(--info);background:var(--info-soft);border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.kicker .src-tag{margin-left:8px}

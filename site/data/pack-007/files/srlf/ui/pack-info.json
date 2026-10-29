@@ -1,0 +1,24 @@
+{
+ "pack_date": "2026-10-28",
+ "paquet": "SRLF",
+ "collected_at": "2026-10-26",
+ "collect_scope": "site de la SRLF (collecte privée, watch/collect.py)",
+ "labels": "etiquettes-20261028.json",
+ "translation": {
+  "pages": 201,
+  "model": "Qwen3.8 Flash Next",
+  "use": "vecteurs FR : mots sur page + traduction, vecteurs sur la traduction"
+ },
+ "search": {
+  "model": "embeddinggemma-300m model_q4 (Gemma 1 Q4)",
+  "dimensions": 512,
+  "lexical": "BM25",
+  "fusion": "RRF 1/(61+r), top 50, unchanged"
+ },
+ "corpus_fingerprint": "d9f4946569d8f730b5b55212b6670aa1f783f211c351a52493105adca443c1f2",
+ "provenance": [
+  "pack-test-2026-10-27-vlm-tout",
+  "etiquettes-20261028.json",
+  "traduction/journal.jsonl"
+ ]
+}
