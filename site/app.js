@@ -1,4 +1,4 @@
-// The interface of A²-Med, for use in a hurry. Two tabs: Question (search, best page first) and Documents (browse, sort), and a
+// The interface of A² Med, for use in a hurry. Two tabs: Question (search, best page first) and Documents (browse, sort), and a
 // reader for any page. Under the field: need buttons (posologie…) and names of diseases / anti-infectives / germs while typing;
 // on the home screen: frequent situations and reference tables. Results: the best page with its key lines (doses and durations
 // stand out), pages 2–3 on one line each, 4–5 folded. No LLM, no generated text, no feedback collection.

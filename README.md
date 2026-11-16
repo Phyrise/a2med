@@ -1,4 +1,4 @@
-# A²-Med — recherche dans les recommandations SPILF, SFAR et SRLF
+# A² Med — recherche dans les recommandations SPILF, SFAR et SRLF
 
 https://phyrise.github.io/a2med/
 
